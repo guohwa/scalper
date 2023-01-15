@@ -1,0 +1,34 @@
+{% extends "../base.html" %}
+{% block content %}
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title">
+                        <h4 class="float-left">Customer</h4>
+                        <a href="/customer/add" class="btn btn-info btn-sm float-right">Add</a>
+                    </div>
+                    <div class="table{% if (items|length == 0) %} mb-0{% endif %}">
+                        <div class="thead">
+                            <div class="tr">
+                                <div class="th">Name</div>
+                                <div class="th">Status</div>
+                                <div class="th">Action</div>
+                            </div>
+                        </div>
+                        <div class="tbody">{% for item in items %}
+                            <div class="tr">
+                                <div class="td" data-title="Name">{{ item.Name }}</div>
+                                <div class="td" data-title="Status">{{ item.Status }}</div>
+                                <div class="td" data-title="Action">
+                                    <a href="/customer/edit/{{ item.ID.Hex() }}" class="btn btn-primary btn-sm">Edit</a>
+                                </div>
+                            </div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="tfoot{% if (items|length > 0) %} d-none{% endif %}">No Data</div>
+                    <nav class="pagger" aria-label="Page navigation" data-count="{{ count }}" data-page="{{ page }}" data-limit="{{ limit }}" data-href="/customer">
+                    </nav>
+                </div>
+            </div>
+        </div>
+{% endblock %}

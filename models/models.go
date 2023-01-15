@@ -24,9 +24,10 @@ var database = struct {
 var Client *mongo.Client
 
 var (
-	UserCollection    *mongo.Collection
-	ConfigCollection  *mongo.Collection
-	SessionCollection *mongo.Collection
+	UserCollection     *mongo.Collection
+	ParamCollection    *mongo.Collection
+	SessionCollection  *mongo.Collection
+	CustomerCollection *mongo.Collection
 )
 
 func init() {
@@ -40,7 +41,9 @@ func init() {
 	}
 
 	UserCollection = Client.Database(database.Name).Collection("users")
-	ConfigCollection = Client.Database(database.Name).Collection("config")
+	ParamCollection = Client.Database(database.Name).Collection("param")
+	SessionCollection = Client.Database(database.Name).Collection("sessions")
+	CustomerCollection = Client.Database(database.Name).Collection("customers")
 
 	res := UserCollection.FindOne(context.Background(), bson.M{"username": "admin"})
 	if err = res.Err(); err != nil {
