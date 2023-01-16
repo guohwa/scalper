@@ -7,7 +7,6 @@ import (
 
 	forms "scalper/forms/user"
 	"scalper/models"
-	"scalper/utils"
 	"scalper/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
@@ -84,7 +83,7 @@ func (handler *userhandler) Handle(router *gin.Engine) {
 
 		saved := bson.M{
 			"username": form.Username,
-			"password": utils.Encrypt(form.Password),
+			"password": models.Encrypt(form.Password),
 			"role":     form.Role,
 			"status":   form.Status,
 		}
@@ -148,7 +147,7 @@ func (handler *userhandler) Handle(router *gin.Engine) {
 			}}
 		} else {
 			update = bson.M{"$set": bson.M{
-				"password": utils.Encrypt(form.Password),
+				"password": models.Encrypt(form.Password),
 				"role":     form.Role,
 				"status":   form.Status,
 			}}

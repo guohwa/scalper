@@ -2,9 +2,10 @@ package models
 
 import (
 	"context"
+	"crypto/sha1"
+	"fmt"
+	"io"
 	"time"
-
-	"scalper/utils"
 
 	"github.com/uncle-gua/log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -32,6 +33,20 @@ var (
 	CustomerCollection *mongo.Collection
 )
 
+const (
+	prefix = "Too Salty"
+	surfix = "^[a-zA-Z0-9_]+$"
+)
+
+func Encrypt(s string) string {
+	cipher := sha1.New()
+	io.WriteString(cipher, prefix)
+	io.WriteString(cipher, s)
+	io.WriteString(cipher, surfix)
+
+	return fmt.Sprintf("%x", cipher.Sum(nil))
+}
+
 func init() {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
@@ -55,7 +70,7 @@ func init() {
 			user := User{
 				ID:       primitive.NewObjectID(),
 				Username: "admin",
-				Password: utils.Encrypt("admin"),
+				Password: Encrypt("admin"),
 				Role:     "Admin",
 				Status:   "Enable",
 			}

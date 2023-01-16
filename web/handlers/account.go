@@ -5,7 +5,6 @@ import (
 
 	"scalper/forms"
 	"scalper/models"
-	"scalper/utils"
 	"scalper/web/handlers/response"
 
 	"github.com/gin-contrib/sessions"
@@ -48,7 +47,7 @@ func (handler *accounthandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		if user.Password != utils.Encrypt(form.Password) {
+		if user.Password != models.Encrypt(form.Password) {
 			resp.Error("Invalid password")
 			return
 		}

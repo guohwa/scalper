@@ -6,7 +6,6 @@ import (
 
 	"scalper/forms"
 	"scalper/models"
-	"scalper/utils"
 	"scalper/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
@@ -39,14 +38,14 @@ func (handler *passwordhandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		if user.Password != utils.Encrypt(form.Password) {
+		if user.Password != models.Encrypt(form.Password) {
 			resp.Error("Invalid password")
 			return
 		}
 
 		filter := bson.M{"_id": user.ID}
 		update := bson.M{"$set": bson.M{
-			"password": utils.Encrypt(form.NewPassword),
+			"password": models.Encrypt(form.NewPassword),
 		}}
 		if err := models.UserCollection.FindOneAndUpdate(
 			context.TODO(),

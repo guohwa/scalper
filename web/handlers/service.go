@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"scalper/service"
 	"scalper/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,8 @@ func (handler *servicehandler) Handle(router *gin.Engine) {
 	router.GET("/service", func(ctx *gin.Context) {
 		resp := response.New(ctx)
 
-		resp.HTML("service/index.html", response.Context{})
+		resp.HTML("service/index.html", response.Context{
+			"status": service.Status(),
+		})
 	})
 }

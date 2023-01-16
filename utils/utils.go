@@ -1,21 +1,38 @@
 package utils
 
 import (
-	"crypto/sha1"
-	"fmt"
-	"io"
+	"strconv"
+
+	"scalper/config"
 )
 
-const (
-	prefix = "Too Salty"
-	surfix = "^[a-zA-Z0-9_]+$"
-)
+func Abs(a string) string {
+	if a[0:1] == "-" {
+		return a[1:]
+	}
+	return a
+}
 
-func Encrypt(s string) string {
-	cipher := sha1.New()
-	io.WriteString(cipher, prefix)
-	io.WriteString(cipher, s)
-	io.WriteString(cipher, surfix)
+func FormatPrice(price float64) string {
+	return strconv.FormatFloat(price, 'f', config.Param.Symbol.Precision.Price, 64)
+}
 
-	return fmt.Sprintf("%x", cipher.Sum(nil))
+func FormatQuantity(price float64) string {
+	return strconv.FormatFloat(price, 'f', config.Param.Symbol.Precision.Quantity, 64)
+}
+
+func QuantityEqual(a, b float64) bool {
+	return FormatQuantity(a) == FormatQuantity(b)
+}
+
+func PriceEqual(a, b float64) bool {
+	return FormatPrice(a) == FormatPrice(b)
+}
+
+func PriceZero() string {
+	return FormatPrice(0.0)
+}
+
+func QuantityZero() string {
+	return FormatQuantity(0.0)
 }
