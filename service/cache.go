@@ -20,10 +20,10 @@ func (cache *Cache) Get(customerID primitive.ObjectID) models.Position {
 	}
 
 	return models.Position{
-		customerID,
-		"NONE",
-		nil,
-		nil,
+		CustomerID: customerID,
+		Hold:       "NONE",
+		Order:      nil,
+		Risk:       nil,
 	}
 }
 
@@ -37,10 +37,10 @@ func (cache Cache) SetHold(customerID primitive.ObjectID, hold string) {
 		cache.Set(customerID, position)
 	} else {
 		position := models.Position{
-			customerID,
-			hold,
-			nil,
-			nil,
+			CustomerID: customerID,
+			Hold:       hold,
+			Order:      nil,
+			Risk:       nil,
 		}
 		cache.Set(customerID, position)
 	}
@@ -52,10 +52,10 @@ func (cache Cache) SetOrder(customerID primitive.ObjectID, order *futures.Create
 		cache.Set(customerID, position)
 	} else {
 		position := models.Position{
-			customerID,
-			"NONE",
-			order,
-			nil,
+			CustomerID: customerID,
+			Hold:       "NONE",
+			Order:      order,
+			Risk:       nil,
 		}
 		cache.Set(customerID, position)
 	}
@@ -67,10 +67,10 @@ func (cache Cache) SetRisk(customerID primitive.ObjectID, risk *futures.Position
 		cache.Set(customerID, position)
 	} else {
 		position := models.Position{
-			customerID,
-			"NONE",
-			nil,
-			risk,
+			CustomerID: customerID,
+			Hold:       "NONE",
+			Order:      nil,
+			Risk:       risk,
 		}
 		cache.Set(customerID, position)
 	}
