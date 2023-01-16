@@ -35,7 +35,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
-	github.com/uncle-gua/gobinance v0.0.0-20230106092128-440c473a4b7c // indirect
+	github.com/uncle-gua/gobinance v0.0.0-20230106092128-440c473a4b7c
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
