@@ -1,0 +1,77 @@
+{% extends "../base.html" %}
+{% block content %}
+        <div class="container">
+            <form class="form ajax-form" method="post" action="/param">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Symbol</h4>
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input class="form-control" placeholder="Name" value="{{ param.Symbol.Name }}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Period</label>
+                            <input class="form-control" placeholder="Period" value="{{ param.Symbol.Period }}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Limit</label>
+                            <input class="form-control" placeholder="Limit" value="{{ param.Symbol.Limit }}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Price Precision</label>
+                            <input class="form-control" name="symbolPricePrecision" placeholder="Price Precision" value="{{ param.Symbol.Precision.Price }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Price Precision</label>
+                            <input class="form-control" name="symbolQuantityPrecision" placeholder="Price Precision" value="{{ param.Symbol.Precision.Quantity }}">
+                        </div>
+                        <h4 class="card-title">SuperTrend</h4>
+                        <div class="form-group">
+                            <label>DEMA Length</label>
+                            <input class="form-control" name="superTrendDemaLength" placeholder="DEMA Length" value="{{ param.SuperTrend.DemaLength }}">
+                        </div>
+                        <div class="form-group">
+                            <label>ATR Length</label>
+                            <input class="form-control" name="superTrendAtrLength" placeholder="ATR Length" value="{{ param.SuperTrend.AtrLength }}">
+                        </div>
+                        <div class="form-group">
+                            <label>ATR Mult</label>
+                            <input class="form-control" name="superTrendAtrMult" placeholder="Atr Mult" value="{{ param.SuperTrend.AtrMult }}">
+                        </div>
+                        <h4 class="card-title">TuTCI</h4>
+                        <div class="form-group">
+                            <label>Entry</label>
+                            <input class="form-control" name="tutciEntry" placeholder="Entry" value="{{ param.TuTCI.Entry }}">
+                        </div>
+                        <h4 class="card-title">SSL</h4>
+                        <div class="form-group">
+                            <label>Length</label>
+                            <input class="form-control" name="sslLength" placeholder="Length" value="{{ param.SSL.Length }}">
+                        </div>
+                        <h4 class="card-title">PV</h4>
+                        <div class="form-group">
+                            <label>Threshold</label>
+                            <input class="form-control" name="pvThreshold" placeholder="Threshold" value="{{ param.PV.Threshold }}">
+                        </div>
+                        <h4 class="card-title">TSL</h4>
+                        <div class="form-group">
+                            <label>Trail Profit</label>
+                            <input class="form-control" name="tslTrailProfit" placeholder="Trail Profit" value="{{ param.TSL.TrailProfit }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Trail Offset</label>
+                            <input class="form-control" name="tslTrailOffset" placeholder="Trail Offset" value="{{ param.TSL.TrailOffset }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Stop Loss</label>
+                            <input class="form-control" name="tslStopLoss" placeholder="Stop Loss" value="{{ param.TSL.StopLoss }}">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                            <button type="reset" class="btn btn-sm btn-warning">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+{% endblock %}

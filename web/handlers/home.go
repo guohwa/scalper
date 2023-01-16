@@ -12,12 +12,13 @@ type homehandler struct {
 }
 
 func (handler *homehandler) Handle(router *gin.Engine) {
-	router.GET("/", handler.render)
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.Request.URL.Path = "/home"
+		router.HandleContext(ctx)
+	})
 
-	router.GET("/home", handler.render)
-}
-
-func (handler *homehandler) render(ctx *gin.Context) {
-	resp := response.New(ctx)
-	resp.HTML("home/index.html", response.Context{})
+	router.GET("/home", func(ctx *gin.Context) {
+		resp := response.New(ctx)
+		resp.HTML("home/index.html", response.Context{})
+	})
 }

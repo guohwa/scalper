@@ -1,11 +1,9 @@
 package config
 
 import (
-	"context"
 	"scalper/models"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/uncle-gua/log"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -14,39 +12,31 @@ var (
 	App   *models.App   = new(models.App)
 )
 
-func Load() error {
-	filter := bson.M{}
-	if err := models.ParamCollection.FindOne(
-		context.Background(),
-		filter,
-	).Decode(Param); err != nil {
-		if err != mongo.ErrNoDocuments {
-			return err
-		}
-		Param.Default()
-	}
-
-	return nil
+func Default() {
+	App.Default()
+	Param.Default()
 }
 
-func Save() error {
-	if Param.ID.IsZero() {
-		Param.ID = primitive.NewObjectID()
-		if _, err := models.ParamCollection.InsertOne(
-			context.TODO(),
-			Param,
-		); err != nil {
-			return err
-		}
-	} else {
-		if _, err := models.ParamCollection.UpdateByID(
-			context.TODO(),
-			Param.ID,
-			bson.M{"$set": Param},
-		); err != nil {
-			return err
+func init() {
+	if err := App.Load(); err != nil {
+		if err == mongo.ErrNoDocuments {
+			App.Default()
+			if err := App.Save(); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			log.Fatal(err)
 		}
 	}
 
-	return nil
+	if err := Param.Load(); err != nil {
+		if err == mongo.ErrNoDocuments {
+			Param.Default()
+			if err := Param.Save(); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			log.Fatal(err)
+		}
+	}
 }

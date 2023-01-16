@@ -91,7 +91,6 @@ func (handler *userhandler) Handle(router *gin.Engine) {
 		if _, err := models.UserCollection.InsertOne(
 			context.TODO(),
 			saved,
-			options.InsertOne(),
 		); err != nil {
 			resp.Error(err)
 			return
@@ -158,7 +157,6 @@ func (handler *userhandler) Handle(router *gin.Engine) {
 			context.TODO(),
 			filter,
 			update,
-			options.FindOneAndUpdate(),
 		).Err()
 		if err != nil {
 			resp.Error(err)

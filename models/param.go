@@ -1,6 +1,11 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"context"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Precision struct {
 	Price    int `bson:"price"`
@@ -49,6 +54,7 @@ type Param struct {
 }
 
 func (param *Param) Default() {
+	param.ID = primitive.NewObjectID()
 	param.Symbol = Symbol{
 		Name:   "ETHUSDT",
 		Period: "15m",
@@ -77,4 +83,40 @@ func (param *Param) Default() {
 		TrailOffset: 0.03,
 		StopLoss:    2.5,
 	}
+}
+
+func (param *Param) Load() error {
+	filter := bson.M{}
+
+	if err := ParamCollection.FindOne(
+		context.TODO(),
+		filter,
+	).Decode(param); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (param *Param) Save() error {
+	if _, err := ParamCollection.InsertOne(
+		context.TODO(),
+		param,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (param *Param) Update() error {
+	if _, err := ParamCollection.UpdateByID(
+		context.TODO(),
+		param.ID,
+		bson.M{"$set": param},
+	); err != nil {
+		return err
+	}
+
+	return nil
 }

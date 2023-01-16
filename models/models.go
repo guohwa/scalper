@@ -24,7 +24,9 @@ var database = struct {
 var Client *mongo.Client
 
 var (
+	AppCollection      *mongo.Collection
 	UserCollection     *mongo.Collection
+	OrderCollection    *mongo.Collection
 	ParamCollection    *mongo.Collection
 	SessionCollection  *mongo.Collection
 	CustomerCollection *mongo.Collection
@@ -40,7 +42,9 @@ func init() {
 		log.Fatal(err)
 	}
 
+	AppCollection = Client.Database(database.Name).Collection("app")
 	UserCollection = Client.Database(database.Name).Collection("users")
+	OrderCollection = Client.Database(database.Name).Collection("orders")
 	ParamCollection = Client.Database(database.Name).Collection("param")
 	SessionCollection = Client.Database(database.Name).Collection("sessions")
 	CustomerCollection = Client.Database(database.Name).Collection("customers")

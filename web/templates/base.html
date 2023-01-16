@@ -30,16 +30,19 @@
                         <a class="nav-link{% if (path == 'order') %} active{% endif %}" href="/order">Order</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link{% if (path == 'follow') %} active{% endif %}" href="/follow/">Follow</a>
+                        <a class="nav-link{% if (path == 'customer') %} active{% endif %}" href="/customer">Customer</a>
+                    </li>{% if user.Role == "Admin" %}
+                    <li class="nav-item">
+                        <a class="nav-link{% if (path == 'user') %} active{% endif %}" href="/user">User</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link{% if (path == 'service') %} active{% endif %}" href="/service">Service</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link{% if (path == 'customer') %} active{% endif %}" href="/customer">Customer</a>
-                    </li>{% if user.Role == "Admin" %}
+                        <a class="nav-link{% if (path == 'param') %} active{% endif %}" href="/param">Param</a>
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link{% if (path == 'user') %} active{% endif %}" href="/user">User</a>
+                        <a class="nav-link{% if (path == 'app') %} active{% endif %}" href="/app">App</a>
                     </li>{% endif %}
                 </ul>
                 <ul class="navbar-nav">

@@ -11,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var passwordHandler = &passwordhandler{}
@@ -53,7 +52,6 @@ func (handler *passwordhandler) Handle(router *gin.Engine) {
 			context.TODO(),
 			filter,
 			update,
-			options.FindOneAndUpdate(),
 		).Err(); err != nil {
 			resp.Error(err)
 			return

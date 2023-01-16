@@ -106,7 +106,6 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 		if _, err := models.CustomerCollection.InsertOne(
 			context.TODO(),
 			saved,
-			options.InsertOne(),
 		); err != nil {
 			resp.Error(err)
 			return
@@ -167,7 +166,6 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			context.TODO(),
 			filter,
 			update,
-			options.FindOneAndUpdate(),
 		).Err()
 		if err != nil {
 			resp.Error(err)

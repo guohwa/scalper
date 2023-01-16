@@ -1,0 +1,29 @@
+{% extends "../base.html" %}
+{% block content %}
+        <div class="container">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">App</h4>
+                    <form class="form ajax-form" method="post" action="/app">
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input class="form-control" name="title" placeholder="Title" value="{{ app.Title }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputMode">Mode</label>
+                            <select class="form-control select2" id="inputMode" name="mode" placeholder="Mode" data-placeholder="Mode" style="width: 100%;">
+                                <option></option>
+                                <option value="debug"{% if (app.Mode == 'debug') %} selected{% endif %}>debug</option>
+                                <option value="test"{% if (app.Mode == 'test') %} selected{% endif %}>test</option>
+                                <option value="release"{% if (app.Mode == 'release') %} selected{% endif %}>release</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                            <button type="reset" class="btn btn-sm btn-warning">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+{% endblock %}

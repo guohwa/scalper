@@ -13,11 +13,15 @@ type Handler interface {
 var handlers []Handler = []Handler{
 	accountHandler,
 	captchaHandler,
-	customerHandler,
+	appHandler,
+	paramHandler,
+	serviceHandler,
 	homeHandler,
+	orderHandler,
 	passwordHandler,
 	profileHandler,
 	userHandler,
+	customerHandler,
 }
 
 func Handle(router *gin.Engine) {
