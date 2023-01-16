@@ -101,6 +101,7 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			"name":      form.Name,
 			"apiKey":    form.ApiKey,
 			"apiSecret": form.ApiSecret,
+			"capital":   form.Capital,
 			"status":    form.Status,
 		}
 		if _, err := models.CustomerCollection.InsertOne(
@@ -160,6 +161,7 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			"name":      form.Name,
 			"apiKey":    form.ApiKey,
 			"apiSecret": form.ApiSecret,
+			"capital":   form.Capital,
 			"status":    form.Status,
 		}}
 		err = models.CustomerCollection.FindOneAndUpdate(

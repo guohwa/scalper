@@ -10,5 +10,7 @@ type Customer struct {
 	Name      string             `bson:"name"`
 	ApiKey    string             `bson:"apiKey"`
 	ApiSecret string             `bson:"apiSecret"`
+	Capital   float64            `bson:"capital"`
+	Position  string             `bson:"position"`
 	Status    string             `bson:"status"`
 }
