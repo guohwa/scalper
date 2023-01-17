@@ -26,7 +26,7 @@ func (t *TuTCI) Call(klines *Klines, ticker *Kline, isFinal bool) {
 		t.run(klines, ticker)
 	}
 
-	if position.hold != "NONE" {
+	if position.Hold != "NONE" {
 		t.trail(klines, ticker)
 	}
 }
@@ -48,9 +48,9 @@ func (t *TuTCI) run(klines *Klines, ticker *Kline) {
 
 	elapsed := time.Since(start)
 
-	if bull {
+	if bull && position.Hold != "LONG" {
 		position.Open("LONG", ticker.Close)
-	} else if bear {
+	} else if bear && position.Hold != "SHORT" {
 		position.Open("SHORT", ticker.Close)
 	} else {
 		log.Printf("Scalper elapsed: %s", elapsed)
@@ -64,18 +64,18 @@ func (t *TuTCI) trail(klines *Klines, ticker *Kline) {
 	defer t.mutex.Unlock()
 
 	if position.peak < 0 {
-		position.peak = position.entry
+		position.peak = position.Entry
 	}
 
 	sign := func() float64 {
-		if position.hold == "SHORT" {
+		if position.Hold == "SHORT" {
 			return -1
 		}
 
 		return 1
 	}()
 
-	roe := sign * (ticker.Close - position.entry) / position.entry * 100
+	roe := sign * (ticker.Close - position.Entry) / position.Entry * 100
 
 	if sign < 0 {
 		position.peak = math.Min(position.peak, ticker.Close)
@@ -84,7 +84,7 @@ func (t *TuTCI) trail(klines *Klines, ticker *Kline) {
 	}
 
 	if roe < -config.Param.TSL.StopLoss {
-		position.Close(position.hold, ticker.Close)
+		position.Close(position.Hold, ticker.Close)
 		return
 	}
 
@@ -95,7 +95,7 @@ func (t *TuTCI) trail(klines *Klines, ticker *Kline) {
 	if position.reach {
 		offset := sign * (ticker.Close - position.peak) / position.peak * 100
 		if offset < -config.Param.TSL.TrailOffset {
-			position.Close(position.hold, ticker.Close)
+			position.Close(position.Hold, ticker.Close)
 		}
 	}
 }

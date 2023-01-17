@@ -2,9 +2,9 @@
 {% block content %}
         <div class="container">
                 <div class="jumbotron">
-                        <h1 class="display-4">Service status: <span class="{% if service.Status == 'Stopped' %} text-red{% else %} text-green{% endif %}">{{ service.Status }}</span></h1>
+                        <h1 class="display-4">Service status: <span class="{% if status == 'Stopped' %} text-red{% else %} text-green{% endif %}">{{ status }}</span></h1>
                         <hr class="my-4">
-                        <a class="btn btn-lg ajax-link{% if service.Status == 'Stopped' %} btn-success{% else %} btn-danger{% endif %}" href="{% if service.Status == 'Stopped' %}/service/start{% else %}/service/stop{% endif %}" role="button">{% if service.Status == 'Stopped' %}Start{% else %}Stop{% endif %}</a>
+                        <a class="btn btn-lg ajax-link{% if status == 'Stopped' %} btn-success{% else %} btn-danger{% endif %}" href="{% if status == 'Stopped' %}/service/start{% else %}/service/stop{% endif %}" role="button">{% if status == 'Stopped' %}Start{% else %}Stop{% endif %}</a>
                 </div>
         </div>
 {% endblock %}

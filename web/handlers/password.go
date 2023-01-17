@@ -43,15 +43,14 @@ func (handler *passwordhandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		filter := bson.M{"_id": user.ID}
 		update := bson.M{"$set": bson.M{
 			"password": models.Encrypt(form.NewPassword),
 		}}
-		if err := models.UserCollection.FindOneAndUpdate(
+		if _, err := models.UserCollection.UpdateByID(
 			context.TODO(),
-			filter,
+			user.ID,
 			update,
-		).Err(); err != nil {
+		); err != nil {
 			resp.Error(err)
 			return
 		}

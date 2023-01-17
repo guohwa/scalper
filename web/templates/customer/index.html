@@ -12,6 +12,7 @@
                             <div class="tr">
                                 <div class="th">Name</div>
                                 <div class="th">Capital</div>
+                                <div class="th">Position</div>
                                 <div class="th">Status</div>
                                 <div class="th">Action</div>
                             </div>
@@ -19,7 +20,8 @@
                         <div class="tbody">{% for item in items %}
                             <div class="tr">
                                 <div class="td" data-title="Name">{{ item.Name }}</div>
-                                <div class="td" data-title="Capital">{{ item.Capital }}</div>
+                                <div class="td" data-title="Capital">{{ item.Capital|floatformat:'%.2f' }}</div>
+                                <div class="td" data-title="Position">{{ item.Position }}</div>
                                 <div class="td" data-title="Status">{{ item.Status }}</div>
                                 <div class="td" data-title="Action">
                                     <a href="/customer/edit/{{ item.ID.Hex() }}" class="btn btn-primary btn-sm">Edit</a>

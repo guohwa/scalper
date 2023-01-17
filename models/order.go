@@ -10,8 +10,8 @@ type Order struct {
 	Side         string             `bson:"side"`
 	PositionSide string             `bson:"positionSide"`
 	Quantity     string             `bson:"quantity"`
-	EntryPrice   string             `bson:"entryPrice"`
+	EntryPrice   float64            `bson:"entryPrice"`
 	EntryTime    int64              `bson:"entryTime"`
-	ClosePrice   string             `bson:"closePrice"`
+	ClosePrice   float64            `bson:"closePrice"`
 	CloseTime    int64              `bson:"closeTime"`
 }

@@ -136,9 +136,6 @@ func (handler *userhandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		filter := bson.M{
-			"_id": uId,
-		}
 		var update bson.M
 		if form.Password == "" {
 			update = bson.M{"$set": bson.M{
@@ -152,12 +149,11 @@ func (handler *userhandler) Handle(router *gin.Engine) {
 				"status":   form.Status,
 			}}
 		}
-		err = models.UserCollection.FindOneAndUpdate(
+		if _, err = models.UserCollection.UpdateByID(
 			context.TODO(),
-			filter,
+			uId,
 			update,
-		).Err()
-		if err != nil {
+		); err != nil {
 			resp.Error(err)
 			return
 		}

@@ -26,11 +26,14 @@ var Client *mongo.Client
 
 var (
 	AppCollection      *mongo.Collection
+	ParamCollection    *mongo.Collection
+	PositionCollection *mongo.Collection
+
 	UserCollection     *mongo.Collection
 	OrderCollection    *mongo.Collection
-	ParamCollection    *mongo.Collection
-	SessionCollection  *mongo.Collection
 	CustomerCollection *mongo.Collection
+
+	SessionCollection *mongo.Collection
 )
 
 const (
@@ -58,11 +61,14 @@ func init() {
 	}
 
 	AppCollection = Client.Database(database.Name).Collection("app")
+	ParamCollection = Client.Database(database.Name).Collection("param")
+	PositionCollection = Client.Database(database.Name).Collection("position")
+
 	UserCollection = Client.Database(database.Name).Collection("users")
 	OrderCollection = Client.Database(database.Name).Collection("orders")
-	ParamCollection = Client.Database(database.Name).Collection("param")
-	SessionCollection = Client.Database(database.Name).Collection("sessions")
 	CustomerCollection = Client.Database(database.Name).Collection("customers")
+
+	SessionCollection = Client.Database(database.Name).Collection("sessions")
 
 	res := UserCollection.FindOne(context.Background(), bson.M{"username": "admin"})
 	if err = res.Err(); err != nil {

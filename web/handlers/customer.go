@@ -153,10 +153,6 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		filter := bson.M{
-			"_id": uId,
-		}
-
 		update := bson.M{"$set": bson.M{
 			"name":      form.Name,
 			"apiKey":    form.ApiKey,
@@ -164,12 +160,11 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			"capital":   form.Capital,
 			"status":    form.Status,
 		}}
-		err = models.CustomerCollection.FindOneAndUpdate(
+		if _, err = models.CustomerCollection.UpdateByID(
 			context.TODO(),
-			filter,
+			uId,
 			update,
-		).Err()
-		if err != nil {
+		); err != nil {
 			resp.Error(err)
 			return
 		}
