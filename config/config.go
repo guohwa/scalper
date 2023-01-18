@@ -8,14 +8,9 @@ import (
 )
 
 var (
-	Param *models.Param = new(models.Param)
 	App   *models.App   = new(models.App)
+	Param *models.Param = new(models.Param)
 )
-
-func Default() {
-	App.Default()
-	Param.Default()
-}
 
 func init() {
 	if err := App.Load(); err != nil {

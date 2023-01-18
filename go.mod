@@ -9,6 +9,7 @@ require (
 	github.com/uncle-gua/base64Captcha v0.0.0-20221229173854-28fc6caf8479
 	github.com/uncle-gua/log v0.0.0-20221204022824-ca8d28e70377
 	go.mongodb.org/mongo-driver v1.11.1
+	github.com/sirupsen/logrus v1.9.0
 )
 
 require (
@@ -44,7 +45,7 @@ require (
 	golang.org/x/image v0.0.0-20190501045829-6d32002ffd75 // indirect
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

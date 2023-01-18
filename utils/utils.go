@@ -7,7 +7,7 @@ import (
 )
 
 func Abs(a string) string {
-	if a[0:1] == "-" {
+	if len(a) > 0 && a[0:1] == "-" {
 		return a[1:]
 	}
 	return a

@@ -9,11 +9,11 @@ import (
 	"github.com/uncle-gua/log"
 )
 
-// func init() {
-// 	if err := service.Start(); err != nil {
-// 		log.Fatal(err)
-// 	}
-// }
+func init() {
+	if err := service.Start(); err != nil {
+		log.Fatal(err)
+	}
+}
 
 func Start() error {
 	return service.Start()

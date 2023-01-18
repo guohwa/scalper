@@ -134,11 +134,14 @@ func Open(positionSide string, price float64) {
 				return
 			}
 
-			if positionSide == "SHORT" {
-				quantity = "-" + quantity
-			}
-
-			customers.SetPosition(customer, quantity)
+			customers.SetPosition(customer,
+				func(positionSide, quantity string) string {
+					if positionSide == "SHORT" {
+						return "-" + quantity
+					}
+					return quantity
+				}(positionSide, quantity),
+			)
 
 			order := models.Order{
 				ID:           primitive.NewObjectID(),
