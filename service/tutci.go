@@ -11,7 +11,7 @@ import (
 	"github.com/uncle-gua/log"
 )
 
-func NewTuTCI(hold string) Policy {
+func NewTuTCI() Policy {
 	return &TuTCI{
 		mutex: &sync.RWMutex{},
 	}

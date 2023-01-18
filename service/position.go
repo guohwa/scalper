@@ -35,12 +35,10 @@ func Default() *Position {
 }
 
 func Load() *Position {
-	filter := bson.M{}
-
 	var position = new(Position)
 	if err := models.PositionCollection.FindOne(
 		context.TODO(),
-		filter,
+		bson.M{},
 	).Decode(&position); err != nil {
 		if err != mongo.ErrNoDocuments {
 			log.Fatal(err)
@@ -55,6 +53,45 @@ func Load() *Position {
 			}
 		}()
 	}
+
+	cursor, err := models.UserCollection.Find(
+		context.TODO(),
+		bson.M{
+			"status": "Enable",
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var users []models.User
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		log.Fatal(err)
+	}
+	uIds := make([]primitive.ObjectID, 0, len(users))
+	for _, user := range users {
+		uIds = append(uIds, user.ID)
+	}
+
+	cursor, err = models.CustomerCollection.Find(
+		context.TODO(),
+		bson.M{
+			"status": "Enable",
+			"userId": bson.M{
+				"$in": uIds,
+			},
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var customers []models.Customer
+	if err = cursor.All(context.TODO(), &customers); err != nil {
+		log.Fatal(err)
+	}
+
+	position.customers = customers
+	log.Info(position)
 
 	return position
 }
@@ -106,7 +143,7 @@ func (position *Position) Open(positionSide string, price float64) {
 					Side(side).
 					PositionSide(futures.PositionSideType("SHORT")).
 					Type(futures.OrderTypeMarket).
-					Quantity(customer.Position).
+					Quantity(utils.Abs(customer.Position)).
 					Do(context.Background())
 				if err != nil {
 					log.Error(err)
@@ -119,7 +156,7 @@ func (position *Position) Open(positionSide string, price float64) {
 					Side(side).
 					PositionSide(futures.PositionSideType("LONG")).
 					Type(futures.OrderTypeMarket).
-					Quantity(customer.Position).
+					Quantity(utils.Abs(customer.Position)).
 					Do(context.Background())
 				if err != nil {
 					log.Error(err)
@@ -152,7 +189,9 @@ func (position *Position) Open(positionSide string, price float64) {
 				context.TODO(),
 				customer.ID,
 				bson.M{
-					"position": quantity,
+					"$set": bson.M{
+						"position": quantity,
+					},
 				},
 			); err != nil {
 				log.Error(err)
@@ -213,12 +252,14 @@ func (position *Position) Close(positionSide string, price float64) {
 				log.Error(err)
 			}
 
-			position.customers[i].Position = "0"
+			position.customers[i].Position = ""
 			if _, err = models.CustomerCollection.UpdateByID(
 				context.TODO(),
 				customer.ID,
 				bson.M{
-					"position": "0",
+					"$set": bson.M{
+						"position": "",
+					},
 				},
 			); err != nil {
 				log.Error(err)

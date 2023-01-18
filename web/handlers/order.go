@@ -104,7 +104,7 @@ func (handler *orderhandler) Handle(router *gin.Engine) {
 		cursor, err = models.OrderCollection.Find(
 			context.TODO(),
 			filter,
-			options.Find().SetSort(bson.M{"tradeTime": -1}).SetSkip((page-1)*limit).SetLimit(limit),
+			options.Find().SetSort(bson.M{"entryTime": -1}).SetSkip((page-1)*limit).SetLimit(limit),
 		)
 		if err != nil {
 			resp.Error(err)

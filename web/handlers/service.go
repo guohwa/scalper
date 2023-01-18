@@ -20,4 +20,24 @@ func (handler *servicehandler) Handle(router *gin.Engine) {
 			"status": service.Status(),
 		})
 	})
+
+	router.GET("/service/start", func(ctx *gin.Context) {
+		resp := response.New(ctx)
+
+		if err := service.Start(); err != nil {
+			resp.Error(err)
+			return
+		}
+
+		resp.Success("service start successful", "/")
+	})
+
+	router.GET("/service/stop", func(ctx *gin.Context) {
+		resp := response.New(ctx)
+
+		service.Stop()
+
+		resp.Success("service stop successful", "/")
+	})
+
 }

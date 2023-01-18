@@ -38,14 +38,14 @@
                                         <div class="td{% if item.Side|upper =='SELL' %} text-yellow{% elif item.Side|upper =='BUY' %} text-aqua{% else %}{% endif %}" data-title="Side">{{ item.Side }}</div>
                                         <div class="td{% if item.PositionSide|upper =='SHORT' %} text-red{% elif item.PositionSide|upper =='LONG' %} text-green{% else %}{% endif %}" data-title="PositionSide">{{ item.PositionSide }}</div>
                                         <div class="td" data-title="Quantity">{{ item.Quantity }}</div>
-                                        <div class="td" data-title="EntryPrice">{{ item.EntryPrice }}</div>
                                         <div class="td" data-title="EntryTime">{{ item.EntryTime|unixmilli|time:"2006-01-02 15:04:05" }}</div>
-                                        <div class="td" data-title="ClosePrice">{{ item.ClosePrice }}</div>
-                                        <div class="td" data-title="CloseTime">{{ item.CloseTime|unixmilli|time:"2006-01-02 15:04:05" }}</div>
+                                        <div class="td" data-title="EntryPrice">{{ item.EntryPrice }}</div>
+                                        <div class="td" data-title="CloseTime">{% if item.CloseTime > 0 %}{{ item.CloseTime|unixmilli|time:"2006-01-02 15:04:05" }}{% endif %}</div>
+                                        <div class="td" data-title="ClosePrice">{% if item.ClosePrice > 0 %}{{ item.ClosePrice }}{% endif %}</div>
                                     </div>{% endfor %}
                                 </div>
                             </div>
-                            <div class="tfoot{% if (items|length > 0) %} d-none{% endif %}">No Data</div>
+                            <div class="tfoot{% if (orders|length > 0) %} d-none{% endif %}">No Data</div>
                             <nav class="pagger" aria-label="Page navigation" data-count="{{ count }}" data-page="{{ page }}" data-limit="{{ limit }}" data-href="/order/{{ customer.ID.Hex() }}"></nav>
                         </div>
                     </div>

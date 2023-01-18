@@ -102,6 +102,7 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			"apiKey":    form.ApiKey,
 			"apiSecret": form.ApiSecret,
 			"capital":   form.Capital,
+			"position":  "",
 			"status":    form.Status,
 		}
 		if _, err := models.CustomerCollection.InsertOne(

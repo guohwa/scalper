@@ -19,7 +19,7 @@ func (app *App) Default() {
 	app.ID = primitive.NewObjectID()
 	app.Title = "Scalper"
 	app.Mode = "debug"
-	app.Listen = ":8080"
+	app.Listen = ":8082"
 	app.Trust = []string{
 		"127.0.0.1",
 	}
