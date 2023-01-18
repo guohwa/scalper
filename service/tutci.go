@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"scalper/config"
+	"scalper/position"
 	"scalper/ta"
 
 	"github.com/uncle-gua/log"
@@ -63,8 +64,8 @@ func (t *TuTCI) trail(klines *Klines, ticker *Kline) {
 	}
 	defer t.mutex.Unlock()
 
-	if position.peak < 0 {
-		position.peak = position.Entry
+	if position.Peak < 0 {
+		position.Peak = position.Entry
 	}
 
 	sign := func() float64 {
@@ -78,9 +79,9 @@ func (t *TuTCI) trail(klines *Klines, ticker *Kline) {
 	roe := sign * (ticker.Close - position.Entry) / position.Entry * 100
 
 	if sign < 0 {
-		position.peak = math.Min(position.peak, ticker.Close)
+		position.Peak = math.Min(position.Peak, ticker.Close)
 	} else {
-		position.peak = math.Max(position.peak, ticker.Close)
+		position.Peak = math.Max(position.Peak, ticker.Close)
 	}
 
 	if roe < -config.Param.TSL.StopLoss {
@@ -89,11 +90,11 @@ func (t *TuTCI) trail(klines *Klines, ticker *Kline) {
 	}
 
 	if roe >= config.Param.TSL.TrailProfit {
-		position.reach = true
+		position.Reach = true
 	}
 
-	if position.reach {
-		offset := sign * (ticker.Close - position.peak) / position.peak * 100
+	if position.Reach {
+		offset := sign * (ticker.Close - position.Peak) / position.Peak * 100
 		if offset < -config.Param.TSL.TrailOffset {
 			position.Close(position.Hold, ticker.Close)
 		}

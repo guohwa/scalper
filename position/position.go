@@ -1,4 +1,4 @@
-package service
+package position
 
 import (
 	"context"
@@ -13,28 +13,30 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var position = Load()
+var (
+	Hold  = "NONE"
+	Entry = 0.0
+	Peak  = -1.0
+	Reach = false
+)
 
-type Position struct {
+type position struct {
 	Hold  string  `bson:"hold"`
 	Entry float64 `bson:"entry"`
-	peak  float64 `bson:"-"`
-	reach bool    `bson:"-"`
 }
 
-func Default() *Position {
-	return &Position{
+func Default() *position {
+	return &position{
 		Hold:  "NONE",
 		Entry: 0.0,
-		peak:  -1,
-		reach: false,
 	}
 }
 
-func Load() *Position {
-	var position = new(Position)
+func init() {
+	var position = new(position)
 	if err := models.PositionCollection.FindOne(
 		context.TODO(),
 		bson.M{},
@@ -43,26 +45,28 @@ func Load() *Position {
 			log.Fatal(err)
 		}
 		position = Default()
-		go func() {
-			if _, err := models.PositionCollection.InsertOne(
-				context.TODO(),
-				position,
-			); err != nil {
-				log.Error(err)
-			}
-		}()
+		if _, err := models.PositionCollection.InsertOne(
+			context.TODO(),
+			position,
+		); err != nil {
+			log.Error(err)
+		}
 	}
-
-	return position
+	Hold = position.Hold
+	Entry = position.Entry
 }
 
-func (position *Position) Save() error {
+func save() error {
 	filter := bson.M{}
-
 	if _, err := models.PositionCollection.UpdateOne(
 		context.TODO(),
 		filter,
-		position,
+		bson.M{
+			"$set": bson.M{
+				"hold":  Hold,
+				"entry": Entry,
+			},
+		},
 	); err != nil {
 		return err
 	}
@@ -70,11 +74,11 @@ func (position *Position) Save() error {
 	return nil
 }
 
-func (position *Position) Open(positionSide string, price float64) {
-	position.Entry = price
-	position.Hold = positionSide
+func Open(positionSide string, price float64) {
+	Entry = price
+	Hold = positionSide
 	go func() {
-		if err := position.Save(); err != nil {
+		if err := save(); err != nil {
 			log.Error(err)
 		}
 	}()
@@ -86,7 +90,7 @@ func (position *Position) Open(positionSide string, price float64) {
 		go func(i int, customer models.Customer) {
 			service := futures.NewClient(customer.ApiKey, customer.ApiSecret).NewCreateOrderService()
 
-			if positionSide == "LONG" && position.Hold == "SHORT" {
+			if positionSide == "LONG" && Hold == "SHORT" {
 				side := futures.SideTypeBuy
 				_, err := service.Symbol(config.Param.Symbol.Name).
 					Side(side).
@@ -99,7 +103,7 @@ func (position *Position) Open(positionSide string, price float64) {
 				}
 			}
 
-			if positionSide == "SHORT" && position.Hold == "LONG" {
+			if positionSide == "SHORT" && Hold == "LONG" {
 				side := futures.SideTypeSell
 				_, err := service.Symbol(config.Param.Symbol.Name).
 					Side(side).
@@ -149,7 +153,7 @@ func (position *Position) Open(positionSide string, price float64) {
 				ClosePrice:   0.0,
 				CloseTime:    0,
 			}
-			if _, err = models.OrderCollection.InsertOne(
+			if _, err := models.OrderCollection.InsertOne(
 				context.TODO(),
 				order,
 			); err != nil {
@@ -159,14 +163,12 @@ func (position *Position) Open(positionSide string, price float64) {
 	}
 }
 
-func (position *Position) Close(positionSide string, price float64) {
-	position.Entry = 0.0
-	position.Hold = "NONE"
-	position.reach = false
-	position.peak = -1
+func Close(positionSide string, price float64) {
+	Entry = 0.0
+	Hold = "NONE"
 
 	go func() {
-		if err := position.Save(); err != nil {
+		if err := save(); err != nil {
 			log.Error(err)
 		}
 	}()
@@ -193,16 +195,21 @@ func (position *Position) Close(positionSide string, price float64) {
 
 			customers.SetPosition(customer, "")
 
-			if err = models.OrderCollection.FindOneAndUpdate(
+			if err := models.OrderCollection.FindOneAndUpdate(
 				context.TODO(),
 				bson.M{
 					"customerId": customer.ID,
 					"closeTime":  0,
 				},
 				bson.M{
-					"closePrice": price,
-					"coseTime":   time.Now().UnixMilli(),
+					"$set": bson.M{
+						"closePrice": price,
+						"closeTime":  time.Now().UnixMilli(),
+					},
 				},
+				options.FindOneAndUpdate().SetSort(bson.M{
+					"entryTime": -1,
+				}),
 			).Err(); err != nil {
 				log.Error(err)
 			}

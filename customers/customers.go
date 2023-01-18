@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-var data = make([]models.Customer, 0)
+var customers = make([]models.Customer, 0)
 
 func init() {
 	cursor, err := models.CustomerCollection.Find(
@@ -19,35 +19,39 @@ func init() {
 		log.Fatal(err)
 	}
 
-	if err = cursor.All(context.TODO(), &data); err != nil {
+	var items []models.Customer
+	if err = cursor.All(context.TODO(), &items); err != nil {
 		log.Fatal(err)
+	}
+	for _, customer := range items {
+		Add(customer)
 	}
 }
 
 func Data() []models.Customer {
-	return data
+	return customers
 }
 
 func Add(customer models.Customer) {
-	data = append(data, customer)
+	customers = append(customers, customer)
 }
 
 func Set(customer models.Customer) {
-	for i := 0; i < len(data); i++ {
-		if data[i].ID == customer.ID {
-			data[i].Name = customer.Name
-			data[i].ApiKey = customer.ApiKey
-			data[i].ApiSecret = customer.ApiSecret
-			data[i].Capital = customer.Capital
-			data[i].Status = customer.Status
+	for i := 0; i < len(customers); i++ {
+		if customers[i].ID == customer.ID {
+			customers[i].Name = customer.Name
+			customers[i].ApiKey = customer.ApiKey
+			customers[i].ApiSecret = customer.ApiSecret
+			customers[i].Capital = customer.Capital
+			customers[i].Status = customer.Status
 		}
 	}
 }
 
 func SetPosition(customer models.Customer, position string) {
-	for i := 0; i < len(data); i++ {
-		if data[i].ID == customer.ID {
-			data[i].Position = position
+	for i := 0; i < len(customers); i++ {
+		if customers[i].ID == customer.ID {
+			customers[i].Position = position
 		}
 	}
 
@@ -57,27 +61,11 @@ func SetPosition(customer models.Customer, position string) {
 			customer.ID,
 			bson.M{
 				"$set": bson.M{
-					"position": "",
+					"position": position,
 				},
 			},
 		); err != nil {
 			log.Error(err)
 		}
 	}()
-}
-
-func DisableByUser(user models.User) {
-	for i := 0; i < len(data); i++ {
-		if data[i].UserID == user.ID {
-			data[i].Status = "Disable"
-		}
-	}
-}
-
-func EnableByUser(user models.User) {
-	for i := 0; i < len(data); i++ {
-		if data[i].UserID == user.ID {
-			data[i].Status = "Enable"
-		}
-	}
 }
