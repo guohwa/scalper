@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"scalper/config"
+	"scalper/customers"
 	"scalper/models"
 	"scalper/utils"
 	"time"
@@ -17,20 +18,18 @@ import (
 var position = Load()
 
 type Position struct {
-	customers []models.Customer `bson:"-"`
-	Hold      string            `bson:"hold"`
-	Entry     float64           `bson:"entry"`
-	peak      float64           `bson:"-"`
-	reach     bool              `bson:"-"`
+	Hold  string  `bson:"hold"`
+	Entry float64 `bson:"entry"`
+	peak  float64 `bson:"-"`
+	reach bool    `bson:"-"`
 }
 
 func Default() *Position {
 	return &Position{
-		customers: make([]models.Customer, 0),
-		Hold:      "NONE",
-		Entry:     0.0,
-		peak:      -1,
-		reach:     false,
+		Hold:  "NONE",
+		Entry: 0.0,
+		peak:  -1,
+		reach: false,
 	}
 }
 
@@ -54,45 +53,6 @@ func Load() *Position {
 		}()
 	}
 
-	cursor, err := models.UserCollection.Find(
-		context.TODO(),
-		bson.M{
-			"status": "Enable",
-		},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var users []models.User
-	if err = cursor.All(context.TODO(), &users); err != nil {
-		log.Fatal(err)
-	}
-	uIds := make([]primitive.ObjectID, 0, len(users))
-	for _, user := range users {
-		uIds = append(uIds, user.ID)
-	}
-
-	cursor, err = models.CustomerCollection.Find(
-		context.TODO(),
-		bson.M{
-			"status": "Enable",
-			"userId": bson.M{
-				"$in": uIds,
-			},
-		},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var customers []models.Customer
-	if err = cursor.All(context.TODO(), &customers); err != nil {
-		log.Fatal(err)
-	}
-
-	position.customers = customers
-	log.Info(position)
-
 	return position
 }
 
@@ -110,20 +70,6 @@ func (position *Position) Save() error {
 	return nil
 }
 
-func (position *Position) Add(customer models.Customer) {
-	position.customers = append(position.customers, customer)
-}
-
-func (position *Position) Remove(customer models.Customer) {
-	customers := position.customers[:0]
-	for _, c := range position.customers {
-		if c.ID != customer.ID {
-			customers = append(customers, c)
-		}
-	}
-	position.customers = customers
-}
-
 func (position *Position) Open(positionSide string, price float64) {
 	position.Entry = price
 	position.Hold = positionSide
@@ -133,7 +79,10 @@ func (position *Position) Open(positionSide string, price float64) {
 		}
 	}()
 
-	for i, customer := range position.customers {
+	for i, customer := range customers.Data() {
+		if customer.Status == "Disable" {
+			continue
+		}
 		go func(i int, customer models.Customer) {
 			service := futures.NewClient(customer.ApiKey, customer.ApiSecret).NewCreateOrderService()
 
@@ -184,18 +133,8 @@ func (position *Position) Open(positionSide string, price float64) {
 			if positionSide == "SHORT" {
 				quantity = "-" + quantity
 			}
-			position.customers[i].Position = quantity
-			if _, err = models.CustomerCollection.UpdateByID(
-				context.TODO(),
-				customer.ID,
-				bson.M{
-					"$set": bson.M{
-						"position": quantity,
-					},
-				},
-			); err != nil {
-				log.Error(err)
-			}
+
+			customers.SetPosition(customer, quantity)
 
 			order := models.Order{
 				ID:           primitive.NewObjectID(),
@@ -232,7 +171,7 @@ func (position *Position) Close(positionSide string, price float64) {
 		}
 	}()
 
-	for i, customer := range position.customers {
+	for i, customer := range customers.Data() {
 		go func(i int, customer models.Customer) {
 			side := futures.SideTypeBuy
 			if positionSide == "LONG" {
@@ -252,18 +191,7 @@ func (position *Position) Close(positionSide string, price float64) {
 				log.Error(err)
 			}
 
-			position.customers[i].Position = ""
-			if _, err = models.CustomerCollection.UpdateByID(
-				context.TODO(),
-				customer.ID,
-				bson.M{
-					"$set": bson.M{
-						"position": "",
-					},
-				},
-			); err != nil {
-				log.Error(err)
-			}
+			customers.SetPosition(customer, "")
 
 			if err = models.OrderCollection.FindOneAndUpdate(
 				context.TODO(),

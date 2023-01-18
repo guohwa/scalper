@@ -9,11 +9,11 @@ import (
 	"github.com/uncle-gua/log"
 )
 
-func init() {
-	if err := service.Start(); err != nil {
-		log.Fatal(err)
-	}
-}
+// func init() {
+// 	if err := service.Start(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
 
 func Start() error {
 	return service.Start()
@@ -125,12 +125,11 @@ func (serv *klineService) Start() error {
 	return nil
 }
 
-func (serv *klineService) Register(p Policy) {
-	serv.policies = append(serv.policies, p)
-}
-
 func (serv *klineService) Stop() {
-	defer close(serv.done)
 	serv.Status = "Stopped"
 	serv.stop <- struct{}{}
+}
+
+func (serv *klineService) Register(p Policy) {
+	serv.policies = append(serv.policies, p)
 }

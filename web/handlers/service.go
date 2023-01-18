@@ -29,7 +29,7 @@ func (handler *servicehandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp.Success("service start successful", "/")
+		resp.Success("service start successful", "")
 	})
 
 	router.GET("/service/stop", func(ctx *gin.Context) {
@@ -37,7 +37,7 @@ func (handler *servicehandler) Handle(router *gin.Engine) {
 
 		service.Stop()
 
-		resp.Success("service stop successful", "/")
+		resp.Success("service stop successful", "")
 	})
 
 }

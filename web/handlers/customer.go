@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"scalper/customers"
 	forms "scalper/forms/customer"
 	"scalper/models"
 	"scalper/web/handlers/response"
@@ -96,22 +97,25 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		saved := bson.M{
-			"userId":    user.ID,
-			"name":      form.Name,
-			"apiKey":    form.ApiKey,
-			"apiSecret": form.ApiSecret,
-			"capital":   form.Capital,
-			"position":  "",
-			"status":    form.Status,
+		customer := models.Customer{
+			ID:        primitive.NewObjectID(),
+			UserID:    user.ID,
+			Name:      form.Name,
+			ApiKey:    form.ApiKey,
+			ApiSecret: form.ApiKey,
+			Capital:   form.Capital,
+			Position:  "",
+			Status:    form.Status,
 		}
 		if _, err := models.CustomerCollection.InsertOne(
 			context.TODO(),
-			saved,
+			customer,
 		); err != nil {
 			resp.Error(err)
 			return
 		}
+
+		customers.Add(customer)
 
 		resp.Success("Customer save successful", "/customer")
 	})
@@ -154,6 +158,7 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			return
 		}
 
+		var customer models.Customer
 		update := bson.M{"$set": bson.M{
 			"name":      form.Name,
 			"apiKey":    form.ApiKey,
@@ -161,14 +166,19 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			"capital":   form.Capital,
 			"status":    form.Status,
 		}}
-		if _, err = models.CustomerCollection.UpdateByID(
+		if err = models.CustomerCollection.FindOneAndUpdate(
 			context.TODO(),
-			uId,
+			bson.M{
+				"_id": uId,
+			},
 			update,
-		); err != nil {
+			options.FindOneAndUpdate().SetReturnDocument(options.After),
+		).Decode(&customer); err != nil {
 			resp.Error(err)
 			return
 		}
+
+		customers.Set(customer)
 
 		resp.Success("Customer update successful", "/customer")
 	})
