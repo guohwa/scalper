@@ -13,6 +13,9 @@ func init() {
 	if err := service.Start(); err != nil {
 		log.Fatal(err)
 	}
+	if err := position.Load(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Start() error {

@@ -35,7 +35,6 @@ func Data() []models.Customer {
 
 func Add(customer models.Customer) {
 	customers = append(customers, customer)
-	log.Tracef("customer name: %s, position: %s", customer.Name, customer.Position)
 }
 
 func Set(customer models.Customer) {

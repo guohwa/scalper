@@ -1,8 +1,9 @@
 package web
 
 import (
+	"log"
+
 	"scalper/config"
-	"scalper/log"
 	"scalper/models"
 	"scalper/web/handlers"
 	"scalper/web/middleware"
@@ -38,6 +39,6 @@ func Start() {
 
 	handlers.Handle(router)
 
-	log.Info("Server listen on " + config.App.Listen)
+	log.Println("Server listen on " + config.App.Listen)
 	router.Run(config.App.Listen)
 }

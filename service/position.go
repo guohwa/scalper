@@ -1,14 +1,13 @@
-package position
+package service
 
 import (
 	"context"
-	"time"
-
 	"scalper/config"
 	"scalper/customers"
 	"scalper/log"
 	"scalper/models"
 	"scalper/utils"
+	"time"
 
 	"github.com/uncle-gua/gobinance/futures"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,56 +16,53 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var (
-	Hold  = "NONE"
-	Entry = 0.0
-	Peak  = -1.0
-	Reach = false
-)
+var position = new(Position)
 
-type position struct {
-	Hold  string  `bson:"hold"`
-	Entry float64 `bson:"entry"`
+type Position struct {
+	Hold  string
+	Entry float64
+	Peak  float64
+	Reach bool
 }
 
-func Default() position {
-	return position{
+func (position *Position) Default() *Position {
+	return &Position{
 		Hold:  "NONE",
 		Entry: 0.0,
+		Peak:  -1,
+		Reach: false,
 	}
 }
 
-func init() {
-	var p position
+func (position *Position) Load() error {
 	if err := models.PositionCollection.FindOne(
 		context.TODO(),
 		bson.M{},
-	).Decode(&p); err != nil {
+	).Decode(position); err != nil {
 		if err != mongo.ErrNoDocuments {
-			log.Fatal(err)
+			position = position.Default()
 		}
-		p = Default()
 		if _, err := models.PositionCollection.InsertOne(
 			context.TODO(),
-			p,
+			position,
 		); err != nil {
-			log.Error(err)
+			return err
 		}
 	}
-	Hold = p.Hold
-	Entry = p.Entry
-	log.Tracef("Position hold: %s, entry: %s", Hold, Entry)
+
+	log.Infof("hold: %s, entry: %.2f", position.Hold, position.Entry)
+	return nil
 }
 
-func save() error {
+func (position *Position) Save() error {
 	filter := bson.M{}
 	if _, err := models.PositionCollection.UpdateOne(
 		context.TODO(),
 		filter,
 		bson.M{
 			"$set": bson.M{
-				"hold":  Hold,
-				"entry": Entry,
+				"hold":  position.Hold,
+				"entry": position.Entry,
 			},
 		},
 	); err != nil {
@@ -76,25 +72,27 @@ func save() error {
 	return nil
 }
 
-func Open(positionSide string, price float64) {
-	Hold = positionSide
-	Entry = price
+func (position *Position) Open(positionSide string, price float64) {
+	defer func() {
+		position.Hold = positionSide
+		position.Entry = price
 
-	go func() {
-		if err := save(); err != nil {
-			log.Error(err)
-		}
+		go func() {
+			if err := position.Save(); err != nil {
+				log.Error(err)
+			}
+		}()
 	}()
 
 	for i, customer := range customers.Data() {
 		if customer.Status == "Disable" {
 			continue
 		}
-		go func(i int, customer models.Customer) {
+		go func(i int, customer models.Customer, hold string) {
 			service := futures.NewClient(customer.ApiKey, customer.ApiSecret).NewCreateOrderService()
 
-			if positionSide == "LONG" && Hold == "SHORT" {
-				log.Trace("Reverse customer: %s, positionSide: %s, quantity: %s", customer.Name, Hold, customer.Position)
+			if positionSide == "LONG" && hold == "SHORT" {
+				log.Infof("Reverse customer: %s, hold: %s, quantity: %s", customer.Name, hold, customer.Position)
 				side := futures.SideTypeBuy
 				_, err := service.Symbol(config.Param.Symbol.Name).
 					Side(side).
@@ -107,8 +105,8 @@ func Open(positionSide string, price float64) {
 				}
 			}
 
-			if positionSide == "SHORT" && Hold == "LONG" {
-				log.Trace("Reverse customer: %s, positionSide: %s, quantity: %s", customer.Name, Hold, customer.Position)
+			if positionSide == "SHORT" && hold == "LONG" {
+				log.Infof("Reverse customer: %s, hold: %s, quantity: %s", customer.Name, hold, customer.Position)
 				side := futures.SideTypeSell
 				_, err := service.Symbol(config.Param.Symbol.Name).
 					Side(side).
@@ -127,7 +125,7 @@ func Open(positionSide string, price float64) {
 			}
 
 			quantity := utils.FormatQuantity(customer.Capital / price)
-			log.Trace("Open customer: %s, positionSide: %s, quantity: %s", customer.Name, positionSide, quantity)
+			log.Infof("Open customer: %s, positionSide: %s, quantity: %s", customer.Name, positionSide, quantity)
 			_, err := service.
 				Symbol(config.Param.Symbol.Name).
 				Side(side).
@@ -168,16 +166,16 @@ func Open(positionSide string, price float64) {
 			); err != nil {
 				log.Error(err)
 			}
-		}(i, customer)
+		}(i, customer, position.Hold)
 	}
 }
 
-func Close(positionSide string, price float64) {
-	Entry = 0.0
-	Hold = "NONE"
+func (position *Position) Close(positionSide string, price float64) {
+	position.Entry = 0.0
+	position.Hold = "NONE"
 
 	go func() {
-		if err := save(); err != nil {
+		if err := position.Save(); err != nil {
 			log.Error(err)
 		}
 	}()
@@ -189,7 +187,7 @@ func Close(positionSide string, price float64) {
 				side = futures.SideTypeSell
 			}
 
-			log.Trace("Close customer: %s, positionSide: %s, quantity: %s", customer.Name, positionSide, customer.Position)
+			log.Infof("Close customer: %s, positionSide: %s, quantity: %s", customer.Name, positionSide, customer.Position)
 			quantity := utils.Abs(customer.Position)
 			_, err := futures.NewClient(customer.ApiKey, customer.ApiSecret).
 				NewCreateOrderService().

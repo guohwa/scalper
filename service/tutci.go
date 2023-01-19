@@ -7,7 +7,6 @@ import (
 
 	"scalper/config"
 	"scalper/log"
-	"scalper/position"
 	"scalper/ta"
 )
 
@@ -48,13 +47,16 @@ func (t *TuTCI) run(klines *Klines, ticker *Kline) {
 
 	elapsed := time.Since(start)
 
+	log.Infof("hold: %s", position.Hold)
 	if bull && position.Hold != "LONG" {
 		position.Open("LONG", ticker.Close)
-	} else if bear && position.Hold != "SHORT" {
-		position.Open("SHORT", ticker.Close)
-	} else {
-		log.Printf("Scalper elapsed: %s", elapsed)
+		return
 	}
+	if bear && position.Hold != "SHORT" {
+		position.Open("SHORT", ticker.Close)
+		return
+	}
+	log.Infof("Scalper elapsed: %s", elapsed)
 }
 
 func (t *TuTCI) trail(klines *Klines, ticker *Kline) {
