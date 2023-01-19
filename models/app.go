@@ -11,6 +11,7 @@ type App struct {
 	ID     primitive.ObjectID `bson:"_id"`
 	Title  string             `json:"title"`
 	Mode   string             `json:"mode"`
+	Level  string             `json:"level"`
 	Listen string             `json:"listen"`
 	Trust  []string           `json:"trust"`
 }
@@ -20,6 +21,7 @@ func (app *App) Default() {
 	app.Title = "Scalper"
 	app.Mode = "debug"
 	app.Listen = ":8082"
+	app.Level = "error"
 	app.Trust = []string{
 		"127.0.0.1",
 	}

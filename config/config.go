@@ -8,9 +8,14 @@ import (
 )
 
 var (
-	App   *models.App   = new(models.App)
 	Param *models.Param = new(models.Param)
+	App   *models.App   = new(models.App)
 )
+
+func Default() {
+	App.Default()
+	Param.Default()
+}
 
 func init() {
 	if err := App.Load(); err != nil {
@@ -22,6 +27,12 @@ func init() {
 		} else {
 			log.Fatal(err)
 		}
+
+		level, err := log.ParseLevel(App.Level)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.SetLevel(level)
 	}
 
 	if err := Param.Load(); err != nil {

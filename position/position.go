@@ -28,32 +28,33 @@ type position struct {
 	Entry float64 `bson:"entry"`
 }
 
-func Default() *position {
-	return &position{
+func Default() position {
+	return position{
 		Hold:  "NONE",
 		Entry: 0.0,
 	}
 }
 
 func init() {
-	var position = new(position)
+	var p position
 	if err := models.PositionCollection.FindOne(
 		context.TODO(),
 		bson.M{},
-	).Decode(&position); err != nil {
+	).Decode(&p); err != nil {
 		if err != mongo.ErrNoDocuments {
 			log.Fatal(err)
 		}
-		position = Default()
+		p = Default()
 		if _, err := models.PositionCollection.InsertOne(
 			context.TODO(),
-			position,
+			p,
 		); err != nil {
 			log.Error(err)
 		}
 	}
-	Hold = position.Hold
-	Entry = position.Entry
+	Hold = p.Hold
+	Entry = p.Entry
+	log.Tracef("Position hold: %s, entry: %s", Hold, Entry)
 }
 
 func save() error {
@@ -75,8 +76,9 @@ func save() error {
 }
 
 func Open(positionSide string, price float64) {
-	Entry = price
 	Hold = positionSide
+	Entry = price
+
 	go func() {
 		if err := save(); err != nil {
 			log.Error(err)

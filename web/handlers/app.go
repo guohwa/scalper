@@ -8,6 +8,7 @@ import (
 	"scalper/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uncle-gua/log"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -33,9 +34,27 @@ func (handler *apphandler) Handle(router *gin.Engine) {
 			return
 		}
 
+		if form.Mode != gin.Mode() {
+			gin.SetMode(form.Mode)
+		}
+
+		if form.Level != log.GetLevel().String() {
+			level, err := log.ParseLevel(form.Level)
+			if err != nil {
+				resp.Error(err)
+				return
+			}
+			log.SetLevel(level)
+		}
+
+		config.App.Title = form.Title
+		config.App.Mode = form.Mode
+		config.App.Level = form.Level
+
 		update := bson.M{"$set": bson.M{
 			"title": form.Title,
 			"mode":  form.Mode,
+			"level": form.Level,
 		}}
 		if _, err := models.AppCollection.UpdateByID(
 			context.TODO(),
@@ -44,13 +63,6 @@ func (handler *apphandler) Handle(router *gin.Engine) {
 		); err != nil {
 			resp.Error(err)
 			return
-		}
-
-		config.App.Title = form.Title
-		config.App.Mode = form.Mode
-
-		if form.Mode != gin.Mode() {
-			gin.SetMode(form.Mode)
 		}
 
 		resp.Success("App update successful", "")
