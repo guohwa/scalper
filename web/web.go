@@ -2,6 +2,7 @@ package web
 
 import (
 	"scalper/config"
+	"scalper/log"
 	"scalper/models"
 	"scalper/web/handlers"
 	"scalper/web/middleware"
@@ -10,7 +11,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/mongo/mongodriver"
 	"github.com/gin-gonic/gin"
-	"github.com/uncle-gua/log"
 )
 
 func Start() {

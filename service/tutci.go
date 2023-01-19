@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"scalper/config"
+	"scalper/log"
 	"scalper/position"
 	"scalper/ta"
-
-	"github.com/uncle-gua/log"
 )
 
 func NewTuTCI() Policy {

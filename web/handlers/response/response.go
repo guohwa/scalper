@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"regexp"
 
+	"scalper/log"
+
 	"github.com/flosch/pongo2"
 	"github.com/gin-gonic/gin"
-	"github.com/uncle-gua/log"
 )
 
 const pattern = "^[a-zA-Z0-9_]+$"

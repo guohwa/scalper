@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"scalper/log"
 	"scalper/models"
 	"scalper/web/handlers/response"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/uncle-gua/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

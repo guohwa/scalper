@@ -2,14 +2,15 @@ package position
 
 import (
 	"context"
-	"scalper/config"
-	"scalper/customers"
-	"scalper/models"
-	"scalper/utils"
 	"time"
 
+	"scalper/config"
+	"scalper/customers"
+	"scalper/log"
+	"scalper/models"
+	"scalper/utils"
+
 	"github.com/uncle-gua/gobinance/futures"
-	"github.com/uncle-gua/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -93,6 +94,7 @@ func Open(positionSide string, price float64) {
 			service := futures.NewClient(customer.ApiKey, customer.ApiSecret).NewCreateOrderService()
 
 			if positionSide == "LONG" && Hold == "SHORT" {
+				log.Trace("Reverse customer: %s, positionSide: %s, quantity: %s", customer.Name, Hold, customer.Position)
 				side := futures.SideTypeBuy
 				_, err := service.Symbol(config.Param.Symbol.Name).
 					Side(side).
@@ -106,6 +108,7 @@ func Open(positionSide string, price float64) {
 			}
 
 			if positionSide == "SHORT" && Hold == "LONG" {
+				log.Trace("Reverse customer: %s, positionSide: %s, quantity: %s", customer.Name, Hold, customer.Position)
 				side := futures.SideTypeSell
 				_, err := service.Symbol(config.Param.Symbol.Name).
 					Side(side).
@@ -124,6 +127,7 @@ func Open(positionSide string, price float64) {
 			}
 
 			quantity := utils.FormatQuantity(customer.Capital / price)
+			log.Trace("Open customer: %s, positionSide: %s, quantity: %s", customer.Name, positionSide, quantity)
 			_, err := service.
 				Symbol(config.Param.Symbol.Name).
 				Side(side).
@@ -185,6 +189,7 @@ func Close(positionSide string, price float64) {
 				side = futures.SideTypeSell
 			}
 
+			log.Trace("Close customer: %s, positionSide: %s, quantity: %s", customer.Name, positionSide, customer.Position)
 			quantity := utils.Abs(customer.Position)
 			_, err := futures.NewClient(customer.ApiKey, customer.ApiSecret).
 				NewCreateOrderService().

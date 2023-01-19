@@ -2,13 +2,15 @@ package handlers
 
 import (
 	"context"
+
 	"scalper/config"
 	"scalper/forms"
+	"scalper/log"
 	"scalper/models"
 	"scalper/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
-	"github.com/uncle-gua/log"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -39,7 +41,7 @@ func (handler *apphandler) Handle(router *gin.Engine) {
 		}
 
 		if form.Level != log.GetLevel().String() {
-			level, err := log.ParseLevel(form.Level)
+			level, err := logrus.ParseLevel(form.Level)
 			if err != nil {
 				resp.Error(err)
 				return

@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"scalper/config"
+	"scalper/log"
 
 	"github.com/uncle-gua/gobinance/futures"
-	"github.com/uncle-gua/log"
 )
 
 func init() {

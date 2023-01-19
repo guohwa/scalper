@@ -2,9 +2,10 @@ package customers
 
 import (
 	"context"
+
+	"scalper/log"
 	"scalper/models"
 
-	"github.com/uncle-gua/log"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

@@ -1,9 +1,10 @@
 package config
 
 import (
+	"scalper/log"
 	"scalper/models"
 
-	"github.com/uncle-gua/log"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -28,7 +29,7 @@ func init() {
 			log.Fatal(err)
 		}
 
-		level, err := log.ParseLevel(App.Level)
+		level, err := logrus.ParseLevel(App.Level)
 		if err != nil {
 			log.Fatal(err)
 		}
