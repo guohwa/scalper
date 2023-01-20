@@ -1,0 +1,177 @@
+// © Uncle-Gua
+
+//@version=5
+strategy('TuTCI', overlay=true, initial_capital=5000, default_qty_type=strategy.cash, default_qty_value=5000, commission_type=strategy.commission.percent, commission_value=0.04, max_bars_back=500, use_bar_magnifier=true)
+
+
+// *****************************************************************************
+// *                                                                           *
+// *                               Strategy Settings                           *
+// *                                                                           *
+// *                                Trend Scalper                              *
+// *                            @Author : Uncle-Gua                            *
+// *                                                                           *
+// *****************************************************************************
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+start           = input.time(timestamp('2022-01-01T00:00:00+08:00'),    group='Back Test',  title='Start')
+finish          = input.time(timestamp('2030-12-31T00:00:00+08:00'),    group='Back Test',  title='Finish')
+window          = time >= start and time <= finish ? true : false
+
+
+// *****************************************************************************
+// *                                  Super Trend                              *
+// *                                  Super Trend                              *
+// *                              @Author : Uncle-Gua                          *
+// *                                                                           *
+// *****************************************************************************
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+ST_Group        = 'SuperTrend'
+ST_Tema         = input.int(9,              title="TEMA Length",        group=ST_Group)
+ST_Length       = input.int(3,              title="ATR Length",         group=ST_Group)
+ST_Factor       = input.float(5.0,          title="ATR Factor",         group=ST_Group)
+
+ema1            = ta.ema(close, ST_Tema)
+ema2            = ta.ema(ema1, ST_Tema)
+ema3            = ta.ema(ema2, ST_Tema)
+Basis           = 3 * (ema1 - ema2) + ema3
+
+tr              = na(high[1])? high-low : math.max(math.max(high - low, math.abs(high - close[1])), math.abs(low - close[1]))
+atr             = ta.rma(tr, ST_Length)
+
+up              = Basis - (ST_Factor * atr)
+dn              = Basis + (ST_Factor * atr)
+tup             = nz(up[1], up)
+tup             := close[1] > tup[1] ? math.max(up, tup[1]) : up
+tdn             = nz(dn[1], dn)
+tdn             := close[1] < tdn[1] ? math.min(dn, tdn[1]) : dn
+Trend           = 1
+Trend           := close > tdn[1] ? 1 : close < tup[1] ? -1: nz(Trend[1], 1)
+Tsl             = Trend > 0 ? tup: tdn
+
+plot(Basis, title='SuperTrend Basis', linewidth=2, color=color.teal, display=display.none)
+plot(Trend == 1 ? Tsl : na, title="SuperTrend Upper", style=plot.style_linebr, linewidth=2, color=color.green)
+plot(Trend == 1 ? na : Tsl, title="SuperTrend Lower", style=plot.style_linebr, linewidth=2, color=color.red)
+
+
+// *****************************************************************************
+// *                                       TuTCI                               *
+// *                           Turtle Trade Channels Indicator                 *
+// *                              @Author : kivancozbilgic                     *
+// *                                                                           *
+// *****************************************************************************
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+TCI_Group       = 'TuTCI'
+TCI_Entry       = input.int(4,              title='Entry Length',       group=TCI_Group,    minval=1)
+
+TCI_upper       = ta.highest(TCI_Entry)
+TCI_lower       = ta.lowest(TCI_Entry)
+
+TCI_bull        = high > TCI_upper[1]
+TCI_bear        = low < TCI_lower[1]
+
+plotshape(TCI_bull ? TCI_upper : na, title='BULL', location=location.absolute, style=shape.circle, size=size.tiny, color=color.new(color.green, 70))
+plotshape(TCI_bear ? TCI_lower : na, title='BEAR', location=location.absolute, style=shape.circle, size=size.tiny, color=color.new(color.red, 70))
+
+
+// *****************************************************************************
+// *                                        PV                                 *
+// *                                       TuTCI                               *
+// *                                @Author : Uncle-Gua                        *
+// *                                                                           *
+// *****************************************************************************
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+PV_Group        = 'PV'
+PV_Threshold    = input.float(2.0,          title="Threshold",          group=PV_Group,     step=0.1)
+PV = (high-low) / math.abs(close-open)
+
+PV_bull = PV < PV_Threshold
+PV_bear = PV < PV_Threshold
+
+
+// *****************************************************************************
+// *                                      SSL                                  *
+// *                                  Trend Scalper                            *
+// *                              @Author : Uncle-Gua                          *
+// *                                                                           *
+// *****************************************************************************
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+SSL_Group       = 'SSL'
+SSL_Length      = input.int(160,            title='Length',             group=SSL_Group,    minval=1,       step=1)
+
+SSL_high = ta.hma(high, SSL_Length)
+SSL_low  = ta.hma(low, SSL_Length)
+
+SSL_hlv  = int(na)
+SSL_hlv := close > SSL_high ? 1 : close < SSL_low ? -1 : SSL_hlv[1]
+SSL = SSL_hlv < 0 ? SSL_high : SSL_low
+
+SSL_color = close > SSL ? #00c3ff : close < SSL ? #ff0062 : na
+plot(SSL, title="SSL", linewidth=3, color=SSL_color)
+
+SSL_bull = close > SSL
+SSL_bear = close < SSL
+
+
+// *****************************************************************************
+// *                                       ROC                                 *
+// *                                  Rate Of Change                           *
+// *                              @Author : Uncle-Gua                          *
+// *                                                                           *
+// *****************************************************************************
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+ROC_Group       = "ROC"
+ROC_Length      = input.int(9,              title="Length",             group=ROC_Group,            minval=1)
+roc = 100 * (close - close[ROC_Length])/close[ROC_Length]
+
+// *****************************************************************************
+// *                                Position Setting                           *
+// *                                 Trend Scalper                             *
+// *                              @Author : Uncle-Gua                          *
+// *                                                                           *
+// *****************************************************************************
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+PS_Group        = 'POSITION'
+PS_Expect       = input.string('BOTH',      title='Expect',             group=PS_Group,     options=['BOTH','LONG', 'SHORT'])
+PS_Mode         = input.string('Capital',   title='Mode',               group=PS_Group,     options=['Capital', 'Equity'])
+
+
+// *****************************************************************************
+// *                                 Trailing TP/SL                            *
+// *                                  Trend Scalper                            *
+// *                              @Author : Uncle-Gua                          *
+// *                                                                           *
+// *****************************************************************************
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+TSL_Group       = 'TP/SL'
+TSL_Mode        = input.string('Trail',     title="Mode",               group=TSL_Group,    options=['Trail', 'Fixed'])
+
+TSL_TS          = input.float(0.3,          title='Profit Target(%)',   group=TSL_Group,    minval=0,       step=0.1)
+TSL_TO          = input.float(0.03,         title='Trail Offset(%)',    group=TSL_Group,    minval=0,       step=0.01)
+TSL_SL          = input.float(2.5,          title='Stop Loss(%)',       group=TSL_Group,    minval=0,       step=0.1)
+
+PIP_ts          = close * TSL_TS / syminfo.mintick / 100
+PIP_to          = close * TSL_TO / syminfo.mintick / 100
+PIP_sl          = close * TSL_SL / syminfo.mintick / 100
+PIP_tp          = TSL_Mode == 'Trail' ? na : PIP_ts
+
+TICKER = syminfo.prefix + ':' + syminfo.ticker
+
+plot(strategy.position_avg_price, linewidth=2, color=color.white, style=plot.style_linebr, title='Average Price')
+
+if window and PS_Expect != 'SHORT' and strategy.position_size <= 0 and Trend > 0 and TCI_bull and PV_bull and SSL_bull //and RDS_bull
+    size = (PS_Mode == 'Capital' ? strategy.initial_capital : strategy.equity) / close
+    op_msg = '{"symbol":"'+TICKER+'","action":"OPEN","side":"LONG","quantity":' + str.tostring(size) + ',"comment":"OP-L@' + str.tostring(close, format.mintick) + '"}'
+    strategy.entry("LONG", strategy.long, qty=size, comment='OP-L@' + str.tostring(close, format.mintick), alert_message=op_msg)
+    tp_msg = '{"symbol":"'+TICKER+'","action":"CLOSE","side":"LONG","quantity":' + str.tostring(math.abs(strategy.position_size)) + ',"comment":"TP-L"}'
+    sl_msg = '{"symbol":"'+TICKER+'","action":"CLOSE","side":"LONG","quantity":' + str.tostring(math.abs(strategy.position_size)) + ',"comment":"SL-L"}'
+    tr_msg = '{"symbol":"'+TICKER+'","action":"CLOSE","side":"LONG","quantity":' + str.tostring(math.abs(strategy.position_size)) + ',"comment":"TR-L"}'
+    strategy.exit("CL-L", "LONG", comment_profit='TP-L', comment_loss='SL-L', comment_trailing='TR-L', profit=PIP_tp, loss=PIP_sl, trail_points=PIP_ts, trail_offset=PIP_to, alert_profit=tp_msg, alert_loss=sl_msg, alert_trailing=tr_msg)
+
+if window and PS_Expect != 'LONG' and strategy.position_size >= 0 and Trend < 0 and TCI_bear and PV_bear and SSL_bear //and RDS_bear
+    size = (PS_Mode == 'Capital' ? strategy.initial_capital : strategy.equity) / close
+    op_msg = '{"symbol":"'+TICKER+'","action":"OPEN","side":"SHORT","quantity":' + str.tostring(size) + ',"comment":"OP-S@' + str.tostring(close, format.mintick) + '"}'
+    strategy.entry("SHORT", strategy.short, qty=size, comment='OP-S@' + str.tostring(close, format.mintick), alert_message=op_msg)
+    tp_msg = '{"symbol":"'+TICKER+'","action":"CLOSE","side":"SHORT","quantity":' + str.tostring(math.abs(strategy.position_size)) + ',"comment":"TP-S"}'
+    sl_msg = '{"symbol":"'+TICKER+'","action":"CLOSE","side":"SHORT","quantity":' + str.tostring(math.abs(strategy.position_size)) + ',"comment":"SL-S"}'
+    tr_msg = '{"symbol":"'+TICKER+'","action":"CLOSE","side":"SHORT","quantity":' + str.tostring(math.abs(strategy.position_size)) + ',"comment":"TR-S"}'
+    strategy.exit("CL-S", "SHORT", comment_profit='TP-S', comment_loss='SL-S', comment_trailing='TR-S', profit=PIP_tp, loss=PIP_sl, trail_points=PIP_ts, trail_offset=PIP_to, alert_profit=tp_msg, alert_loss=sl_msg, alert_trailing=tr_msg)
