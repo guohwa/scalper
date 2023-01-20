@@ -20,21 +20,20 @@ func Default() {
 
 func init() {
 	if err := App.Load(); err != nil {
-		if err == mongo.ErrNoDocuments {
-			App.Default()
-			if err := App.Save(); err != nil {
-				log.Fatal(err)
-			}
-		} else {
+		if err != mongo.ErrNoDocuments {
 			log.Fatal(err)
 		}
 
-		level, err := logrus.ParseLevel(App.Level)
-		if err != nil {
+		App.Default()
+		if err := App.Save(); err != nil {
 			log.Fatal(err)
 		}
-		log.SetLevel(level)
 	}
+	level, err := logrus.ParseLevel(App.Level)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetLevel(level)
 
 	if err := Param.Load(); err != nil {
 		if err == mongo.ErrNoDocuments {

@@ -47,14 +47,16 @@ func (t *TuTCI) run(klines *Klines, ticker *Kline) {
 
 	elapsed := time.Since(start)
 
-	log.Infof("hold: %s", position.Hold)
-	if bull && position.Hold != "LONG" {
-		position.Open("LONG", ticker.Close)
-		return
-	}
-	if bear && position.Hold != "SHORT" {
-		position.Open("SHORT", ticker.Close)
-		return
+	if bull {
+		if position.Hold != "LONG" {
+			position.Open("LONG", ticker.Close)
+			return
+		}
+	} else if bear {
+		if position.Hold != "SHORT" {
+			position.Open("SHORT", ticker.Close)
+			return
+		}
 	}
 	log.Infof("Scalper elapsed: %s", elapsed)
 }

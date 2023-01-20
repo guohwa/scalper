@@ -19,19 +19,17 @@ import (
 var position = new(Position)
 
 type Position struct {
-	Hold  string
-	Entry float64
-	Peak  float64
-	Reach bool
+	Hold  string  `bson:"hold"`
+	Entry float64 `bson:"entry"`
+	Peak  float64 `bson:"-"`
+	Reach bool    `bson:"-"`
 }
 
-func (position *Position) Default() *Position {
-	return &Position{
-		Hold:  "NONE",
-		Entry: 0.0,
-		Peak:  -1,
-		Reach: false,
-	}
+func (position *Position) init() {
+	position.Hold = "NONE"
+	position.Entry = 0.0
+	position.Peak = -1
+	position.Reach = false
 }
 
 func (position *Position) Load() error {
@@ -40,8 +38,9 @@ func (position *Position) Load() error {
 		bson.M{},
 	).Decode(position); err != nil {
 		if err != mongo.ErrNoDocuments {
-			position = position.Default()
+			return err
 		}
+		position.init()
 		if _, err := models.PositionCollection.InsertOne(
 			context.TODO(),
 			position,
@@ -76,6 +75,8 @@ func (position *Position) Open(positionSide string, price float64) {
 	defer func() {
 		position.Hold = positionSide
 		position.Entry = price
+		position.Peak = -1
+		position.Reach = false
 
 		go func() {
 			if err := position.Save(); err != nil {
@@ -93,30 +94,78 @@ func (position *Position) Open(positionSide string, price float64) {
 
 			if positionSide == "LONG" && hold == "SHORT" {
 				log.Infof("Reverse customer: %s, hold: %s, quantity: %s", customer.Name, hold, customer.Position)
-				side := futures.SideTypeBuy
-				_, err := service.Symbol(config.Param.Symbol.Name).
-					Side(side).
-					PositionSide(futures.PositionSideType("SHORT")).
-					Type(futures.OrderTypeMarket).
-					Quantity(utils.Abs(customer.Position)).
-					Do(context.Background())
-				if err != nil {
-					log.Error(err)
-				}
+				go func(amount string) {
+					side := futures.SideTypeBuy
+					_, err := service.Symbol(config.Param.Symbol.Name).
+						Side(side).
+						PositionSide(futures.PositionSideType("SHORT")).
+						Type(futures.OrderTypeMarket).
+						Quantity(utils.Abs(amount)).
+						Do(context.Background())
+					if err != nil {
+						log.Error(err)
+					}
+				}(customer.Position)
+
+				go func() {
+					if err := models.OrderCollection.FindOneAndUpdate(
+						context.TODO(),
+						bson.M{
+							"customerId":   customer.ID,
+							"positionSide": "SHORT",
+							"closeTime":    0,
+						},
+						bson.M{
+							"$set": bson.M{
+								"closePrice": price,
+								"closeTime":  time.Now().UnixMilli(),
+							},
+						},
+						options.FindOneAndUpdate().SetSort(bson.M{
+							"entryTime": -1,
+						}),
+					).Err(); err != nil {
+						log.Error(err)
+					}
+				}()
 			}
 
 			if positionSide == "SHORT" && hold == "LONG" {
 				log.Infof("Reverse customer: %s, hold: %s, quantity: %s", customer.Name, hold, customer.Position)
-				side := futures.SideTypeSell
-				_, err := service.Symbol(config.Param.Symbol.Name).
-					Side(side).
-					PositionSide(futures.PositionSideType("LONG")).
-					Type(futures.OrderTypeMarket).
-					Quantity(utils.Abs(customer.Position)).
-					Do(context.Background())
-				if err != nil {
-					log.Error(err)
-				}
+				go func(amount string) {
+					side := futures.SideTypeSell
+					_, err := service.Symbol(config.Param.Symbol.Name).
+						Side(side).
+						PositionSide(futures.PositionSideType("LONG")).
+						Type(futures.OrderTypeMarket).
+						Quantity(utils.Abs(amount)).
+						Do(context.Background())
+					if err != nil {
+						log.Error(err)
+					}
+				}(customer.Position)
+
+				go func() {
+					if err := models.OrderCollection.FindOneAndUpdate(
+						context.TODO(),
+						bson.M{
+							"customerId":   customer.ID,
+							"positionSide": "LONG",
+							"closeTime":    0,
+						},
+						bson.M{
+							"$set": bson.M{
+								"closePrice": price,
+								"closeTime":  time.Now().UnixMilli(),
+							},
+						},
+						options.FindOneAndUpdate().SetSort(bson.M{
+							"entryTime": -1,
+						}),
+					).Err(); err != nil {
+						log.Error(err)
+					}
+				}()
 			}
 
 			side := futures.SideTypeBuy
@@ -173,6 +222,8 @@ func (position *Position) Open(positionSide string, price float64) {
 func (position *Position) Close(positionSide string, price float64) {
 	position.Entry = 0.0
 	position.Hold = "NONE"
+	position.Peak = -1
+	position.Reach = false
 
 	go func() {
 		if err := position.Save(); err != nil {
