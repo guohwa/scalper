@@ -28,8 +28,6 @@ type Position struct {
 func (position *Position) init() {
 	position.Hold = "NONE"
 	position.Entry = 0.0
-	position.Peak = -1
-	position.Reach = false
 }
 
 func (position *Position) Load() error {
@@ -49,7 +47,10 @@ func (position *Position) Load() error {
 		}
 	}
 
-	log.Infof("hold: %s, entry: %.2f", position.Hold, position.Entry)
+	position.Peak = -1
+	position.Reach = false
+
+	log.Infof("hold: %s, entry: %.2f, peak: %.2f, reach: %v", position.Hold, position.Entry, position.Peak, position.Reach)
 	return nil
 }
 
