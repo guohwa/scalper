@@ -30,10 +30,12 @@ type TuTCI struct {
 }
 
 type SSL struct {
-	Length int `bson:"length"`
+	Enable bool `bson:"enable"`
+	Length int  `bson:"length"`
 }
 
 type PV struct {
+	Enable    bool    `bson:"enable"`
 	Threshold float64 `bson:"threshold"`
 }
 
@@ -73,9 +75,11 @@ func (param *Param) Default() {
 		Entry: 4,
 	}
 	param.SSL = SSL{
+		Enable: true,
 		Length: 160,
 	}
 	param.PV = PV{
+		Enable:    true,
 		Threshold: 2.0,
 	}
 	param.TSL = TSL{

@@ -257,8 +257,9 @@ func (position *Position) Close(positionSide string, price float64) {
 			if err := models.OrderCollection.FindOneAndUpdate(
 				context.TODO(),
 				bson.M{
-					"customerId": customer.ID,
-					"closeTime":  0,
+					"customerId":   customer.ID,
+					"positionSide": positionSide,
+					"closeTime":    0,
 				},
 				bson.M{
 					"$set": bson.M{

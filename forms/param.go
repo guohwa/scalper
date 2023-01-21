@@ -7,7 +7,9 @@ type Param struct {
 	SuperTrendAtrLength     int     `form:"superTrendAtrLength" binding:"required"`
 	SuperTrendAtrMult       float64 `form:"superTrendAtrMult" binding:"required"`
 	TutciEntry              int     `form:"tutciEntry" binding:"required"`
+	SSLEnable               bool    `form:"sslEnable" binding:"required"`
 	SSLLength               int     `form:"sslLength" binding:"required"`
+	PVEnable                bool    `form:"pvEnable" binding:"required"`
 	PVThreshold             float64 `form:"pvThreshold" binding:"required"`
 	TSLTrailProfit          float64 `form:"tslTrailProfit" binding:"required"`
 	TSLTrailOffset          float64 `form:"tslTrailOffset" binding:"required"`

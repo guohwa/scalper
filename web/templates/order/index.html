@@ -29,6 +29,7 @@
                                         <div class="th">EntryPrice</div>
                                         <div class="th">CloseTime</div>
                                         <div class="th">ClosePrice</div>
+                                        <div class="th">RealizedPnl</div>
                                     </div>
                                 </div>
                                 <div class="tbody">{% for item in orders %}
@@ -42,6 +43,7 @@
                                         <div class="td" data-title="EntryPrice">{{ item.EntryPrice }}</div>
                                         <div class="td" data-title="CloseTime">{% if item.CloseTime > 0 %}{{ item.CloseTime|unixmilli|time:"2006-01-02 15:04:05" }}{% endif %}</div>
                                         <div class="td" data-title="ClosePrice">{% if item.ClosePrice > 0 %}{{ item.ClosePrice }}{% endif %}</div>
+                                        <div class="td" data-title="ClosePrice">{% if item.ClosePrice > 0 %}{% if item.PositionSide == 'LONG' %}{{ (item.ClosePrice - item.EntryPrice)*item.Quantity }}{% else %}{{ (item.EntryPrice - item.ClosePrice )*item.Quantity }}{% endif %}{% endif %}</div>
                                     </div>{% endfor %}
                                 </div>
                             </div>

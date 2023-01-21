@@ -53,9 +53,11 @@ func (handler *paramhandler) Handle(router *gin.Engine) {
 				"entry": form.TutciEntry,
 			},
 			"ssl": bson.M{
+				"enable": form.SSLEnable,
 				"length": form.SSLLength,
 			},
 			"pv": bson.M{
+				"enable":    form.PVEnable,
 				"threshold": form.PVThreshold,
 			},
 			"tsl": bson.M{
@@ -79,7 +81,9 @@ func (handler *paramhandler) Handle(router *gin.Engine) {
 		config.Param.SuperTrend.AtrLength = form.SuperTrendAtrLength
 		config.Param.SuperTrend.AtrMult = form.SuperTrendAtrMult
 		config.Param.TuTCI.Entry = form.TutciEntry
+		config.Param.SSL.Enable = form.SSLEnable
 		config.Param.SSL.Length = form.SSLLength
+		config.Param.PV.Enable = form.PVEnable
 		config.Param.PV.Threshold = form.PVThreshold
 		config.Param.TSL.TrailProfit = form.TSLTrailProfit
 		config.Param.TSL.TrailOffset = form.TSLTrailOffset

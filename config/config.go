@@ -4,7 +4,6 @@ import (
 	"scalper/log"
 	"scalper/models"
 
-	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -29,19 +28,18 @@ func init() {
 			log.Fatal(err)
 		}
 	}
-	level, err := logrus.ParseLevel(App.Level)
+	level, err := log.ParseLevel(App.Level)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.SetLevel(level)
 
 	if err := Param.Load(); err != nil {
-		if err == mongo.ErrNoDocuments {
-			Param.Default()
-			if err := Param.Save(); err != nil {
-				log.Fatal(err)
-			}
-		} else {
+		if err != mongo.ErrNoDocuments {
+			log.Fatal(err)
+		}
+		Param.Default()
+		if err := Param.Save(); err != nil {
 			log.Fatal(err)
 		}
 	}

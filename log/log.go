@@ -16,7 +16,7 @@ func init() {
 	if err == nil {
 		logger.Out = file
 	} else {
-		logrus.Fatal("Failed to log to file, using default stderr")
+		logger.Fatal("Failed to log to file, using default stderr")
 	}
 }
 
@@ -206,6 +206,10 @@ func Exit(code int) {
 
 func SetNoLock() {
 	logger.SetNoLock()
+}
+
+func ParseLevel(level string) (logrus.Level, error) {
+	return logrus.ParseLevel(level)
 }
 
 func SetLevel(level logrus.Level) {

@@ -10,7 +10,6 @@ import (
 	"scalper/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -41,7 +40,7 @@ func (handler *apphandler) Handle(router *gin.Engine) {
 		}
 
 		if form.Level != log.GetLevel().String() {
-			level, err := logrus.ParseLevel(form.Level)
+			level, err := log.ParseLevel(form.Level)
 			if err != nil {
 				resp.Error(err)
 				return

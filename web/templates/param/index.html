@@ -5,66 +5,96 @@
                 <div class="card">
                     <div class="card-body">
                         <h4 class="card-title">Symbol</h4>
-                        <div class="form-group">
-                            <label>Name</label>
-                            <input class="form-control" placeholder="Name" value="{{ param.Symbol.Name }}" disabled>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label>Name</label>
+                                <input class="form-control" placeholder="Name" value="{{ param.Symbol.Name }}" disabled>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Period</label>
+                                <input class="form-control" placeholder="Period" value="{{ param.Symbol.Period }}" disabled>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Limit</label>
+                                <input class="form-control" placeholder="Limit" value="{{ param.Symbol.Limit }}" disabled>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Period</label>
-                            <input class="form-control" placeholder="Period" value="{{ param.Symbol.Period }}" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label>Limit</label>
-                            <input class="form-control" placeholder="Limit" value="{{ param.Symbol.Limit }}" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label>Price Precision</label>
-                            <input class="form-control" name="symbolPricePrecision" placeholder="Price Precision" value="{{ param.Symbol.Precision.Price }}">
-                        </div>
-                        <div class="form-group">
-                            <label>Price Precision</label>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label>Price Precision</label>
+                                <input class="form-control" name="symbolPricePrecision" placeholder="Price Precision" value="{{ param.Symbol.Precision.Price }}">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Price Precision</label>
                             <input class="form-control" name="symbolQuantityPrecision" placeholder="Price Precision" value="{{ param.Symbol.Precision.Quantity }}">
+                            </div>
                         </div>
                         <h4 class="card-title">SuperTrend</h4>
-                        <div class="form-group">
-                            <label>DEMA Length</label>
-                            <input class="form-control" name="superTrendDemaLength" placeholder="DEMA Length" value="{{ param.SuperTrend.DemaLength }}">
-                        </div>
-                        <div class="form-group">
-                            <label>ATR Length</label>
-                            <input class="form-control" name="superTrendAtrLength" placeholder="ATR Length" value="{{ param.SuperTrend.AtrLength }}">
-                        </div>
-                        <div class="form-group">
-                            <label>ATR Mult</label>
-                            <input class="form-control" name="superTrendAtrMult" placeholder="Atr Mult" value="{{ param.SuperTrend.AtrMult }}">
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label>DEMA Length</label>
+                                <input class="form-control" name="superTrendDemaLength" placeholder="DEMA Length" value="{{ param.SuperTrend.DemaLength }}">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>ATR Length</label>
+                                <input class="form-control" name="superTrendAtrLength" placeholder="ATR Length" value="{{ param.SuperTrend.AtrLength }}">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>ATR Mult</label>
+                                <input class="form-control" name="superTrendAtrMult" placeholder="Atr Mult" value="{{ param.SuperTrend.AtrMult|stringformat:'%.1f' }}">
+                            </div>
                         </div>
                         <h4 class="card-title">TuTCI</h4>
-                        <div class="form-group">
-                            <label>Entry</label>
-                            <input class="form-control" name="tutciEntry" placeholder="Entry" value="{{ param.TuTCI.Entry }}">
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label>Entry</label>
+                                <input class="form-control" name="tutciEntry" placeholder="Entry" value="{{ param.TuTCI.Entry }}">
+                            </div>
                         </div>
                         <h4 class="card-title">SSL</h4>
-                        <div class="form-group">
-                            <label>Length</label>
-                            <input class="form-control" name="sslLength" placeholder="Length" value="{{ param.SSL.Length }}">
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputSSLEnable">Enable</label>
+                                <select class="form-control select2" id="inputSSLEnable" name="sslEnable" placeholder="Enable" data-placeholder="Enable" style="width: 100%;">
+                                    <option></option>
+                                    <option value="True"{% if (param.SSL.Enable == true) %} selected{% endif %}>True</option>
+                                    <option value="False"{% if (param.SSL.Enable == false) %} selected{% endif %}>False</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Length</label>
+                                <input class="form-control" name="sslLength" placeholder="Length" value="{{ param.SSL.Length }}">
+                            </div>
                         </div>
                         <h4 class="card-title">PV</h4>
-                        <div class="form-group">
-                            <label>Threshold</label>
-                            <input class="form-control" name="pvThreshold" placeholder="Threshold" value="{{ param.PV.Threshold|stringformat:'%.1f' }}">
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputPVEnable">Enable</label>
+                                <select class="form-control select2" id="inputPVEnable" name="pvEnable" placeholder="Enable" data-placeholder="Enable" style="width: 100%;">
+                                    <option></option>
+                                    <option value="True"{% if (param.PV.Enable == true) %} selected{% endif %}>True</option>
+                                    <option value="False"{% if (param.PV.Enable == false) %} selected{% endif %}>False</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Threshold</label>
+                                <input class="form-control" name="pvThreshold" placeholder="Threshold" value="{{ param.PV.Threshold|stringformat:'%.1f' }}">
+                            </div>
                         </div>
                         <h4 class="card-title">TSL</h4>
-                        <div class="form-group">
-                            <label>Trail Profit</label>
-                            <input class="form-control" name="tslTrailProfit" placeholder="Trail Profit" value="{{ param.TSL.TrailProfit|stringformat:'%.1f' }}">
-                        </div>
-                        <div class="form-group">
-                            <label>Trail Offset</label>
-                            <input class="form-control" name="tslTrailOffset" placeholder="Trail Offset" value="{{ param.TSL.TrailOffset|stringformat:'%.2f' }}">
-                        </div>
-                        <div class="form-group">
-                            <label>Stop Loss</label>
-                            <input class="form-control" name="tslStopLoss" placeholder="Stop Loss" value="{{ param.TSL.StopLoss|stringformat:'%.1f' }}">
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label>Trail Profit</label>
+                                <input class="form-control" name="tslTrailProfit" placeholder="Trail Profit" value="{{ param.TSL.TrailProfit|stringformat:'%.1f' }}">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Trail Offset</label>
+                                <input class="form-control" name="tslTrailOffset" placeholder="Trail Offset" value="{{ param.TSL.TrailOffset|stringformat:'%.2f' }}">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Stop Loss</label>
+                                <input class="form-control" name="tslStopLoss" placeholder="Stop Loss" value="{{ param.TSL.StopLoss|stringformat:'%.1f' }}">
+                            </div>
                         </div>
                         <div class="form-group">
                             <button type="submit" class="btn btn-sm btn-primary">Submit</button>

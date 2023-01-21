@@ -38,12 +38,18 @@ func (t *TuTCI) run(klines *Klines, ticker *Kline) {
 
 	trend := t.supertrend(klines, config.Param.SuperTrend.DemaLength, config.Param.SuperTrend.AtrLength, config.Param.SuperTrend.AtrMult)
 	upper, lower := t.tutci(klines, config.Param.TuTCI.Entry)
-	hv := t.pv(klines)
+	pv := t.pv(klines)
 	ssl := t.ssl(klines, config.Param.SSL.Length)
 
 	n := klines.Length - 1
-	bull := trend[n] > 0 && klines.High[n] > upper[n-1] && hv[n] < config.Param.PV.Threshold && klines.Close[n] > ssl[n]
-	bear := trend[n] < 0 && klines.Low[n] < lower[n-1] && hv[n] < config.Param.PV.Threshold && klines.Close[n] < ssl[n]
+	bull := trend[n] > 0 &&
+		klines.High[n] > upper[n-1] &&
+		(!config.Param.PV.Enable || pv[n] < config.Param.PV.Threshold) &&
+		(!config.Param.SSL.Enable || klines.Close[n] > ssl[n])
+	bear := trend[n] < 0 &&
+		klines.Low[n] < lower[n-1] &&
+		(!config.Param.PV.Enable || pv[n] < config.Param.PV.Threshold) &&
+		(!config.Param.SSL.Enable || klines.Close[n] < ssl[n])
 
 	elapsed := time.Since(start)
 
