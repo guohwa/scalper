@@ -61,9 +61,9 @@ func (handler *paramhandler) Handle(router *gin.Engine) {
 				"threshold": form.PVThreshold,
 			},
 			"tsl": bson.M{
-				"trailProfit":   form.TSLTrailProfit,
-				"trailOffset":   form.TSLTrailOffset,
-				"trailStopLoss": form.TSLStopLoss,
+				"trailProfit": form.TSLTrailProfit,
+				"trailOffset": form.TSLTrailOffset,
+				"stopLoss":    form.TSLStopLoss,
 			},
 		}}
 		if _, err := models.ParamCollection.UpdateByID(
