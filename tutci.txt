@@ -1,4 +1,4 @@
-// © Uncle-Gua
+// © MoreCrazy
 
 //@version=5
 strategy('TuTCI', overlay=true, initial_capital=5000, default_qty_type=strategy.cash, default_qty_value=5000, commission_type=strategy.commission.percent, commission_value=0.04, max_bars_back=500, use_bar_magnifier=true)
@@ -8,8 +8,8 @@ strategy('TuTCI', overlay=true, initial_capital=5000, default_qty_type=strategy.
 // *                                                                           *
 // *                               Strategy Settings                           *
 // *                                                                           *
-// *                                Trend Scalper                              *
-// *                            @Author : Uncle-Gua                            *
+// *                                    TuTCI                                  *
+// *                            @Author : MoreCrazy                            *
 // *                                                                           *
 // *****************************************************************************
 // -------------|---------------------------|---------------------------|-------------------|---------------|
@@ -20,8 +20,8 @@ window          = time >= start and time <= finish ? true : false
 
 // *****************************************************************************
 // *                                  Super Trend                              *
-// *                                  Super Trend                              *
-// *                              @Author : Uncle-Gua                          *
+// *                                     TuTCI                                 *
+// *                              @Author : MoreCrazy                          *
 // *                                                                           *
 // *****************************************************************************
 // -------------|---------------------------|---------------------------|-------------------|---------------|
@@ -55,8 +55,8 @@ plot(Trend == 1 ? na : Tsl, title="SuperTrend Lower", style=plot.style_linebr, l
 
 // *****************************************************************************
 // *                                       TuTCI                               *
-// *                           Turtle Trade Channels Indicator                 *
-// *                              @Author : kivancozbilgic                     *
+// *                                       TuTCI                               *
+// *                                  @Author : MoreCrazy                      *
 // *                                                                           *
 // *****************************************************************************
 // -------------|---------------------------|---------------------------|-------------------|---------------|
@@ -76,26 +76,28 @@ plotshape(TCI_bear ? TCI_lower : na, title='BEAR', location=location.absolute, s
 // *****************************************************************************
 // *                                        PV                                 *
 // *                                       TuTCI                               *
-// *                                @Author : Uncle-Gua                        *
+// *                                @Author : MoreCrazy                        *
 // *                                                                           *
 // *****************************************************************************
 // -------------|---------------------------|---------------------------|-------------------|---------------|
 PV_Group        = 'PV'
+PV_Enable       = input.bool(true,          title='Enable',             group=PV_Group)
 PV_Threshold    = input.float(2.0,          title="Threshold",          group=PV_Group,     step=0.1)
 PV = (high-low) / math.abs(close-open)
 
-PV_bull = PV < PV_Threshold
-PV_bear = PV < PV_Threshold
+PV_bull = not PV_Enable or PV < PV_Threshold
+PV_bear = not PV_Enable or PV < PV_Threshold
 
 
 // *****************************************************************************
 // *                                      SSL                                  *
-// *                                  Trend Scalper                            *
-// *                              @Author : Uncle-Gua                          *
+// *                                     TuTCI                                 *
+// *                              @Author : MoreCrazy                          *
 // *                                                                           *
 // *****************************************************************************
 // -------------|---------------------------|---------------------------|-------------------|---------------|
 SSL_Group       = 'SSL'
+SSL_Enable      = input.bool(true,          title='Enable',             group=SSL_Group)
 SSL_Length      = input.int(160,            title='Length',             group=SSL_Group,    minval=1,       step=1)
 
 SSL_high = ta.hma(high, SSL_Length)
@@ -108,25 +110,13 @@ SSL = SSL_hlv < 0 ? SSL_high : SSL_low
 SSL_color = close > SSL ? #00c3ff : close < SSL ? #ff0062 : na
 plot(SSL, title="SSL", linewidth=3, color=SSL_color)
 
-SSL_bull = close > SSL
-SSL_bear = close < SSL
-
-
-// *****************************************************************************
-// *                                       ROC                                 *
-// *                                  Rate Of Change                           *
-// *                              @Author : Uncle-Gua                          *
-// *                                                                           *
-// *****************************************************************************
-// -------------|---------------------------|---------------------------|-------------------|---------------|
-ROC_Group       = "ROC"
-ROC_Length      = input.int(9,              title="Length",             group=ROC_Group,            minval=1)
-roc = 100 * (close - close[ROC_Length])/close[ROC_Length]
+SSL_bull = not PV_Enable or close > SSL
+SSL_bear = not PV_Enable or close < SSL
 
 // *****************************************************************************
 // *                                Position Setting                           *
-// *                                 Trend Scalper                             *
-// *                              @Author : Uncle-Gua                          *
+// *                                    TuTCI                                  *
+// *                              @Author : MoreCrazy                          *
 // *                                                                           *
 // *****************************************************************************
 // -------------|---------------------------|---------------------------|-------------------|---------------|
@@ -137,8 +127,8 @@ PS_Mode         = input.string('Capital',   title='Mode',               group=PS
 
 // *****************************************************************************
 // *                                 Trailing TP/SL                            *
-// *                                  Trend Scalper                            *
-// *                              @Author : Uncle-Gua                          *
+// *                                    TuTCI                                  *
+// *                              @Author : MoreCrazy                          *
 // *                                                                           *
 // *****************************************************************************
 // -------------|---------------------------|---------------------------|-------------------|---------------|
