@@ -88,9 +88,19 @@ func (t *TuTCI) trail(klines *Klines, ticker *Kline) {
 	roe := sign * (ticker.Close - position.Entry) / position.Entry * 100
 
 	if sign < 0 {
-		position.Peak = math.Min(position.Peak, ticker.Close)
+		position.Peak = func() float64 {
+			if ticker.OpenTime > 0 {
+				return math.Min(position.Peak, ticker.Low)
+			}
+			return math.Min(position.Peak, ticker.Close)
+		}()
 	} else {
-		position.Peak = math.Max(position.Peak, ticker.Close)
+		position.Peak = func() float64 {
+			if ticker.OpenTime > 0 {
+				return math.Max(position.Peak, ticker.High)
+			}
+			return math.Max(position.Peak, ticker.Close)
+		}()
 	}
 
 	if roe < -config.Param.TSL.StopLoss {

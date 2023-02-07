@@ -9,6 +9,7 @@ import (
 	"scalper/utils"
 	"time"
 
+	"github.com/uncle-gua/gobinance/common"
 	"github.com/uncle-gua/gobinance/futures"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -97,14 +98,28 @@ func (position *Position) Open(positionSide string, price float64) {
 				log.Infof("Reverse customer: %s, hold: %s, quantity: %s", customer.Name, hold, customer.Position)
 				go func(amount string) {
 					side := futures.SideTypeBuy
-					_, err := service.Symbol(config.Param.Symbol.Name).
-						Side(side).
-						PositionSide(futures.PositionSideType("SHORT")).
-						Type(futures.OrderTypeMarket).
-						Quantity(utils.Abs(amount)).
-						Do(context.Background())
-					if err != nil {
+					retry := 1
+					for {
+						_, err := service.Symbol(config.Param.Symbol.Name).
+							Side(side).
+							PositionSide(futures.PositionSideType("SHORT")).
+							Type(futures.OrderTypeMarket).
+							Quantity(utils.Abs(amount)).
+							Do(context.Background())
+						if err == nil {
+							return
+						}
 						log.Error(err)
+						if retry > 2 {
+							return
+						}
+						if err, ok := err.(*common.APIError); ok {
+							if err.Code != -1001 {
+								return
+							}
+						}
+						retry++
+						time.Sleep(3 * time.Millisecond)
 					}
 				}(customer.Position)
 
@@ -135,14 +150,28 @@ func (position *Position) Open(positionSide string, price float64) {
 				log.Infof("Reverse customer: %s, hold: %s, quantity: %s", customer.Name, hold, customer.Position)
 				go func(amount string) {
 					side := futures.SideTypeSell
-					_, err := service.Symbol(config.Param.Symbol.Name).
-						Side(side).
-						PositionSide(futures.PositionSideType("LONG")).
-						Type(futures.OrderTypeMarket).
-						Quantity(utils.Abs(amount)).
-						Do(context.Background())
-					if err != nil {
+					retry := 1
+					for {
+						_, err := service.Symbol(config.Param.Symbol.Name).
+							Side(side).
+							PositionSide(futures.PositionSideType("LONG")).
+							Type(futures.OrderTypeMarket).
+							Quantity(utils.Abs(amount)).
+							Do(context.Background())
+						if err == nil {
+							return
+						}
 						log.Error(err)
+						if retry > 2 {
+							return
+						}
+						if err, ok := err.(*common.APIError); ok {
+							if err.Code != -1001 {
+								return
+							}
+						}
+						retry++
+						time.Sleep(3 * time.Millisecond)
 					}
 				}(customer.Position)
 
@@ -176,16 +205,29 @@ func (position *Position) Open(positionSide string, price float64) {
 
 			quantity := utils.FormatQuantity(customer.Capital / price)
 			log.Infof("Open customer: %s, positionSide: %s, quantity: %s", customer.Name, positionSide, quantity)
-			_, err := service.
-				Symbol(config.Param.Symbol.Name).
-				Side(side).
-				PositionSide(futures.PositionSideType(positionSide)).
-				Type(futures.OrderTypeMarket).
-				Quantity(quantity).
-				Do(context.Background())
-			if err != nil {
+			retry := 1
+			for {
+				_, err := service.
+					Symbol(config.Param.Symbol.Name).
+					Side(side).
+					PositionSide(futures.PositionSideType(positionSide)).
+					Type(futures.OrderTypeMarket).
+					Quantity(quantity).
+					Do(context.Background())
+				if err == nil {
+					break
+				}
 				log.Error(err)
-				return
+				if retry > 2 {
+					return
+				}
+				if err, ok := err.(*common.APIError); ok {
+					if err.Code != -1001 {
+						return
+					}
+				}
+				retry++
+				time.Sleep(3 * time.Millisecond)
 			}
 
 			customers.SetPosition(customer,
@@ -241,16 +283,30 @@ func (position *Position) Close(positionSide string, price float64) {
 
 			log.Infof("Close customer: %s, positionSide: %s, quantity: %s", customer.Name, positionSide, customer.Position)
 			quantity := utils.Abs(customer.Position)
-			_, err := futures.NewClient(customer.ApiKey, customer.ApiSecret).
-				NewCreateOrderService().
-				Symbol(config.Param.Symbol.Name).
-				Side(side).
-				PositionSide(futures.PositionSideType(positionSide)).
-				Type(futures.OrderTypeMarket).
-				Quantity(quantity).
-				Do(context.Background())
-			if err != nil {
+			retry := 1
+			for {
+				_, err := futures.NewClient(customer.ApiKey, customer.ApiSecret).
+					NewCreateOrderService().
+					Symbol(config.Param.Symbol.Name).
+					Side(side).
+					PositionSide(futures.PositionSideType(positionSide)).
+					Type(futures.OrderTypeMarket).
+					Quantity(quantity).
+					Do(context.Background())
+				if err == nil {
+					break
+				}
 				log.Error(err)
+				if retry > 2 {
+					return
+				}
+				if err, ok := err.(*common.APIError); ok {
+					if err.Code != -1001 {
+						return
+					}
+				}
+				retry++
+				time.Sleep(3 * time.Millisecond)
 			}
 
 			customers.SetPosition(customer, "")

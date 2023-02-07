@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strconv"
 
 	"scalper/config"
 	"scalper/log"
@@ -49,12 +50,14 @@ var service = &klineService{
 }
 
 type klineService struct {
-	Klines   *Klines
-	Ticker   *Kline
-	Status   string
-	policies []Policy
-	done     chan struct{}
-	stop     chan struct{}
+	Klines        *Klines
+	Ticker        *Kline
+	Status        string
+	policies      []Policy
+	ch_kline_done chan struct{}
+	ch_kline_stop chan struct{}
+	ch_trade_done chan struct{}
+	ch_trade_stop chan struct{}
 }
 
 func (serv *klineService) errHandler(err error) {
@@ -103,6 +106,29 @@ func (serv *klineService) wsKlineHandler(event *futures.WsKlineEvent) {
 	}
 }
 
+func (serv *klineService) wsAggTradeHandler(event *futures.WsAggTradeEvent) {
+	price, err := strconv.ParseFloat(event.Price, 64)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	kline := &Kline{
+		OpenTime: 0,
+		Close:    price,
+	}
+	for _, p := range serv.policies {
+		go func(policy Policy) {
+			defer func() {
+				if err := recover(); err != nil {
+					log.Error(err)
+				}
+			}()
+			policy.Call(serv.Klines, kline, false)
+		}(p)
+	}
+}
+
 func (serv *klineService) Start() error {
 	client := futures.NewClient("", "")
 
@@ -119,7 +145,12 @@ func (serv *klineService) Start() error {
 		serv.Klines.Append(kline.OpenTime, kline.CloseTime, kline.Open, kline.High, kline.Low, kline.Close, kline.Volume)
 	}
 
-	serv.done, serv.stop, err = futures.WsKlineServe(config.Param.Symbol.Name, config.Param.Symbol.Period, serv.wsKlineHandler, serv.errHandler)
+	serv.ch_kline_done, serv.ch_kline_stop, err = futures.WsKlineServe(config.Param.Symbol.Name, config.Param.Symbol.Period, serv.wsKlineHandler, serv.errHandler)
+	if err != nil {
+		return err
+	}
+
+	serv.ch_trade_done, serv.ch_trade_stop, err = futures.WsAggTradeServe(config.Param.Symbol.Name, serv.wsAggTradeHandler, serv.errHandler)
 	if err != nil {
 		return err
 	}
@@ -130,7 +161,8 @@ func (serv *klineService) Start() error {
 
 func (serv *klineService) Stop() {
 	serv.Status = "Stopped"
-	serv.stop <- struct{}{}
+	serv.ch_kline_stop <- struct{}{}
+	serv.ch_trade_stop <- struct{}{}
 }
 
 func (serv *klineService) Register(p Policy) {
