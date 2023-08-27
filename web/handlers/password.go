@@ -6,7 +6,6 @@ import (
 
 	"scalper/forms"
 	"scalper/models"
-	"scalper/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,12 +14,12 @@ import (
 var passwordHandler = &passwordhandler{}
 
 type passwordhandler struct {
+	base
 }
 
 func (handler *passwordhandler) Handle(router *gin.Engine) {
 	router.GET("/password", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-		resp.HTML("password/index.html", response.Context{})
+		handler.HTML(ctx, "password/index.html", Context{})
 	})
 
 	router.POST("/password", func(ctx *gin.Context) {
@@ -30,16 +29,15 @@ func (handler *passwordhandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		form := forms.Password{}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		if user.Password != models.Encrypt(form.Password) {
-			resp.Error("Invalid password")
+			handler.Error(ctx, "Invalid password")
 			return
 		}
 
@@ -51,10 +49,10 @@ func (handler *passwordhandler) Handle(router *gin.Engine) {
 			user.ID,
 			update,
 		); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("Password update successful", "")
+		handler.Success(ctx, "Password update successful", "")
 	})
 }

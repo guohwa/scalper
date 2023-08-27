@@ -28,6 +28,7 @@ func init() {
 			log.Fatal(err)
 		}
 	}
+	log.Print(App)
 	level, err := log.ParseLevel(App.Level)
 	if err != nil {
 		log.Fatal(err)

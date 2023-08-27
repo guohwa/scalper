@@ -7,7 +7,6 @@ import (
 	"scalper/forms"
 	"scalper/log"
 	"scalper/models"
-	"scalper/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,22 +15,21 @@ import (
 var appHandler = &apphandler{}
 
 type apphandler struct {
+	base
 }
 
 func (handler *apphandler) Handle(router *gin.Engine) {
 	router.GET("/app", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-		resp.HTML("app/index.html", response.Context{
+		handler.HTML(ctx, "app/index.html", Context{
 			"app": config.App,
 		})
 	})
 
 	router.POST("/app", func(ctx *gin.Context) {
-		resp := response.New(ctx)
 		form := forms.App{}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -42,7 +40,7 @@ func (handler *apphandler) Handle(router *gin.Engine) {
 		if form.Level != log.GetLevel().String() {
 			level, err := log.ParseLevel(form.Level)
 			if err != nil {
-				resp.Error(err)
+				handler.Error(ctx, err)
 				return
 			}
 			log.SetLevel(level)
@@ -62,10 +60,10 @@ func (handler *apphandler) Handle(router *gin.Engine) {
 			config.App.ID,
 			update,
 		); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.Success("App update successful", "")
+		handler.Success(ctx, "App update successful", "")
 	})
 }

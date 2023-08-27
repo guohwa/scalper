@@ -5,7 +5,6 @@ import (
 
 	"scalper/forms"
 	"scalper/models"
-	"scalper/web/handlers/response"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -16,44 +15,43 @@ import (
 var accountHandler = &accounthandler{}
 
 type accounthandler struct {
+	base
 }
 
 func (handler *accounthandler) Handle(router *gin.Engine) {
 	router.GET("/account/login", func(ctx *gin.Context) {
-		response.New(ctx).HTML("account/login.html", nil)
+		handler.HTML(ctx, "account/login.html", nil)
 	})
 
 	router.POST("/account/login", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-
 		form := forms.Login{}
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		if !captchaHandler.Verify(ctx, form.Verify) {
-			resp.Error("Invalid verify code")
+			handler.Error(ctx, "Invalid verify code")
 			return
 		}
 
 		user := models.User{}
 		if err := models.UserCollection.FindOne(context.Background(), bson.M{"username": form.Username}).Decode(&user); err != nil {
 			if err == mongo.ErrNoDocuments {
-				resp.Error("User Does not exists.")
+				handler.Error(ctx, "User Does not exists.")
 			} else {
-				resp.Error(err)
+				handler.Error(ctx, err)
 			}
 			return
 		}
 
 		if user.Password != models.Encrypt(form.Password) {
-			resp.Error("Invalid password")
+			handler.Error(ctx, "Invalid password")
 			return
 		}
 
 		if user.Status == "Disable" {
-			resp.Error("User disabled")
+			handler.Error(ctx, "User disabled")
 			return
 		}
 
@@ -61,22 +59,20 @@ func (handler *accounthandler) Handle(router *gin.Engine) {
 		session.Set("user-id", user.ID.Hex())
 
 		if err := session.Save(); err == nil {
-			resp.Success("Login Successful", "/")
+			handler.Success(ctx, "Login Successful", "/")
 		} else {
-			resp.Error("Login Failed")
+			handler.Error(ctx, "Login Failed")
 		}
 	})
 
 	router.GET("/account/logout", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-
 		session := sessions.Default(ctx)
 		session.Delete("user-id")
 
 		if err := session.Save(); err == nil {
-			resp.Success("Logout successful", "/")
+			handler.Success(ctx, "Logout successful", "/")
 		} else {
-			resp.Error("Logout failed")
+			handler.Error(ctx, "Logout failed")
 		}
 	})
 

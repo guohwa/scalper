@@ -9,7 +9,6 @@ import (
 	"scalper/customers"
 	forms "scalper/forms/customer"
 	"scalper/models"
-	"scalper/web/handlers/response"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,6 +19,7 @@ import (
 var customerHandler = &customerhandler{}
 
 type customerhandler struct {
+	base
 }
 
 func (handler *customerhandler) Handle(router *gin.Engine) {
@@ -30,7 +30,6 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		filter := bson.M{
 			"userId": user.ID,
 		}
@@ -40,18 +39,18 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			filter,
 			options.Count().SetMaxTime(2*time.Second))
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		page, err := strconv.ParseInt(ctx.DefaultQuery("page", "1"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		limit, err := strconv.ParseInt(ctx.DefaultQuery("limit", "10"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		cursor, err := models.CustomerCollection.Find(
@@ -59,17 +58,17 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			filter, options.Find().SetSkip((page-1)*limit).SetLimit(limit),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		var items []models.Customer
 		if err = cursor.All(context.TODO(), &items); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.HTML("customer/index.html", response.Context{
+		handler.HTML(ctx, "customer/index.html", Context{
 			"page":  page,
 			"count": count,
 			"limit": limit,
@@ -78,8 +77,7 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 	})
 
 	router.GET("/customer/add", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-		resp.HTML("customer/add.html", response.Context{})
+		handler.HTML(ctx, "customer/add.html", Context{})
 	})
 
 	router.POST("/customer/save", func(ctx *gin.Context) {
@@ -89,11 +87,10 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
 		form := forms.Save{}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -111,22 +108,20 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			context.TODO(),
 			customer,
 		); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		customers.Add(customer)
 
-		resp.Success("Customer save successful", "/customer")
+		handler.Success(ctx, "Customer save successful", "/customer")
 	})
 
 	router.GET("/customer/edit/:id", func(ctx *gin.Context) {
-		resp := response.New(ctx)
-
 		sId := ctx.Param("id")
 		uId, err := primitive.ObjectIDFromHex(sId)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -134,27 +129,26 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 		if err := models.CustomerCollection.FindOne(context.TODO(), bson.M{
 			"_id": uId,
 		}).Decode(&customer); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.HTML("customer/edit.html", response.Context{
+		handler.HTML(ctx, "customer/edit.html", Context{
 			"item": customer,
 		})
 	})
 
 	router.POST("/customer/update/:id", func(ctx *gin.Context) {
-		resp := response.New(ctx)
 		form := forms.Update{}
 		sId := ctx.Param("id")
 		uId, err := primitive.ObjectIDFromHex(sId)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		if err := ctx.ShouldBind(&form); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -174,12 +168,12 @@ func (handler *customerhandler) Handle(router *gin.Engine) {
 			update,
 			options.FindOneAndUpdate().SetReturnDocument(options.After),
 		).Decode(&customer); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		customers.Set(customer)
 
-		resp.Success("Customer update successful", "/customer")
+		handler.Success(ctx, "Customer update successful", "/customer")
 	})
 }

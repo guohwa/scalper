@@ -19,24 +19,8 @@ type Symbol struct {
 	Precision Precision `bson:"precision"`
 }
 
-type SuperTrend struct {
-	DemaLength int     `bson:"demaLength"`
-	AtrLength  int     `bson:"atrLength"`
-	AtrMult    float64 `bson:"atrMult"`
-}
-
-type TuTCI struct {
-	Entry int `bson:"entry"`
-}
-
 type SSL struct {
-	Enable bool `bson:"enable"`
-	Length int  `bson:"length"`
-}
-
-type PV struct {
-	Enable    bool    `bson:"enable"`
-	Threshold float64 `bson:"threshold"`
+	Length int `bson:"length"`
 }
 
 type TSL struct {
@@ -46,13 +30,10 @@ type TSL struct {
 }
 
 type Param struct {
-	ID         primitive.ObjectID `bson:"_id"`
-	Symbol     Symbol             `bson:"symbol"`
-	SuperTrend SuperTrend         `bson:"superTrend"`
-	TuTCI      TuTCI              `bson:"tutci"`
-	SSL        SSL                `bson:"ssl"`
-	PV         PV                 `bson:"pv"`
-	TSL        TSL                `bson:"tsl"`
+	ID     primitive.ObjectID `bson:"_id"`
+	Symbol Symbol             `bson:"symbol"`
+	SSL    SSL                `bson:"ssl"`
+	TSL    TSL                `bson:"tsl"`
 }
 
 func (param *Param) Default() {
@@ -66,21 +47,9 @@ func (param *Param) Default() {
 			Quantity: 3,
 		},
 	}
-	param.SuperTrend = SuperTrend{
-		DemaLength: 9,
-		AtrLength:  3,
-		AtrMult:    5.0,
-	}
-	param.TuTCI = TuTCI{
-		Entry: 4,
-	}
+
 	param.SSL = SSL{
-		Enable: true,
-		Length: 160,
-	}
-	param.PV = PV{
-		Enable:    true,
-		Threshold: 2.0,
+		Length: 120,
 	}
 	param.TSL = TSL{
 		TrailProfit: 0.3,

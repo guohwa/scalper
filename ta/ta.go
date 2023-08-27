@@ -3747,7 +3747,7 @@ func HtDcPeriod(inReal []float64) []float64 {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
+		// smoothedValue = periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -3964,7 +3964,7 @@ func HtDcPhase(inReal []float64) []float64 {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
+		// smoothedValue = periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -4220,7 +4220,7 @@ func HtPhasor(inReal []float64) ([]float64, []float64) {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
+		// smoothedValue = periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0
@@ -4445,7 +4445,7 @@ func HtSine(inReal []float64) ([]float64, []float64) {
 		periodWMASum += tempReal * 4.0
 		trailingWMAValue = inReal[trailingWMAIdx]
 		trailingWMAIdx++
-		smoothedValue = periodWMASum * 0.1
+		// smoothedValue = periodWMASum * 0.1
 		periodWMASum -= periodWMASub
 		i--
 		ok = i != 0

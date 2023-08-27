@@ -9,7 +9,6 @@ import (
 
 	"scalper/log"
 	"scalper/models"
-	"scalper/web/handlers/response"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -20,6 +19,7 @@ import (
 var orderHandler = &orderhandler{}
 
 type orderhandler struct {
+	base
 }
 
 func (handler *orderhandler) Handle(router *gin.Engine) {
@@ -30,8 +30,6 @@ func (handler *orderhandler) Handle(router *gin.Engine) {
 			return
 		}
 
-		resp := response.New(ctx)
-
 		filter := bson.M{
 			"userId": user.ID,
 			"status": "Enable",
@@ -41,12 +39,12 @@ func (handler *orderhandler) Handle(router *gin.Engine) {
 			filter, options.Find(),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		var customers []models.Customer
 		if err = cursor.All(context.TODO(), &customers); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
@@ -87,18 +85,18 @@ func (handler *orderhandler) Handle(router *gin.Engine) {
 			filter,
 			options.Count().SetMaxTime(2*time.Second))
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		page, err := strconv.ParseInt(ctx.DefaultQuery("page", "1"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		limit, err := strconv.ParseInt(ctx.DefaultQuery("limit", "10"), 10, 64)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 		cursor, err = models.OrderCollection.Find(
@@ -107,17 +105,17 @@ func (handler *orderhandler) Handle(router *gin.Engine) {
 			options.Find().SetSort(bson.M{"entryTime": -1}).SetSkip((page-1)*limit).SetLimit(limit),
 		)
 		if err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
 		var orders []models.Order
 		if err = cursor.All(context.TODO(), &orders); err != nil {
-			resp.Error(err)
+			handler.Error(ctx, err)
 			return
 		}
 
-		resp.HTML("order/index.html", response.Context{
+		handler.HTML(ctx, "order/index.html", Context{
 			"page":      page,
 			"count":     count,
 			"limit":     limit,
